@@ -1,0 +1,24 @@
+name: Release CI
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get next version
+        uses: reecetech/version-increment@2024.10.1
+        id: version
+        with:
+          scheme: conventional_commits
+
+      - name: Build image
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          tags: "srvf/application:${{ steps.version.outputs.version }}"
+          context: .
