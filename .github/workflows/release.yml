@@ -19,6 +19,13 @@ jobs:
         with:
           scheme: conventional_commits
 
+      - name: Push Git Tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git tag ${{ steps.version.outputs.v-version }}
+          git push origin ${{ steps.version.outputs.v-version }}
+
       - name: Build backend image
         uses: docker/build-push-action@v2
         with:
