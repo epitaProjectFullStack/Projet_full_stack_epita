@@ -9,13 +9,4 @@ import {RouterOutlet} from '@angular/router';
 })
 
 export class App {
-  protected readonly title = signal('frontend');
-
-  protected readonly text = signal('')
-
-  async onButtonClick() {
-    const result = await fetch('/api/')
-    console.log(result.url);
-    this.text.set(await result.text())
-  }
 }
