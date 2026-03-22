@@ -1,8 +1,9 @@
 package fr.epita.backend.controller.rest;
 
 import fr.epita.backend.controller.api.request.UserRequest;
+import fr.epita.backend.controller.api.response.AdminResponses.UserResponses.AdminUserResponse;
+import fr.epita.backend.controller.api.response.AdminResponses.UserResponses.AdminUsersResponse;
 import fr.epita.backend.controller.api.response.UserResponses.UserResponse;
-import fr.epita.backend.controller.api.response.UserResponses.UsersResponse;
 
 import fr.epita.backend.converter.ControllerConverter.UserControllerConverter;
 import fr.epita.backend.domain.entity.UserEntity;
@@ -16,13 +17,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/user")
-public class UserController {
+@RequestMapping("/api/admin/user")
+public class AdminUserController {
 
     private final UserService userService;
     private final UserControllerConverter userControllerConverter;
 
-    public UserController(UserService userService, UserControllerConverter userControllerConverter) {
+    public AdminUserController(UserService userService, UserControllerConverter userControllerConverter) {
         this.userService = userService;
         this.userControllerConverter = userControllerConverter;
     }
@@ -39,16 +40,16 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<UsersResponse> getUsers() {
+    public ResponseEntity<AdminUsersResponse> getUsers() {
         List<UserEntity> userList = userService.getUsers();
-        UsersResponse response = userControllerConverter.fromEntitiesToUsersResponse(userList);
+        AdminUsersResponse response = userControllerConverter.fromEntitiesToAdminUsersResponse(userList);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUser(@PathVariable UUID id) {
+    public ResponseEntity<AdminUserResponse> getUser(@PathVariable UUID id) {
         UserEntity userEntity = userService.getUser(id);
-        UserResponse response = userControllerConverter.fromEntityToResponse(userEntity);
+        AdminUserResponse response = userControllerConverter.fromEntityToAdminResponse(userEntity);
         return ResponseEntity.ok(response);
     }
 
