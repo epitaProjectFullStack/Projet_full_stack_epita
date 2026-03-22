@@ -2,7 +2,6 @@ import {Component, inject, OnInit, signal} from '@angular/core';
 
 import {FilterBar} from '../../components/filter-bar/filter-bar';
 import {GameCard} from '../../components/game-card/game-card';
-import {Game} from '../../interface/game';
 import {BackendService} from '../../services/backend-service';
 
 @Component({
