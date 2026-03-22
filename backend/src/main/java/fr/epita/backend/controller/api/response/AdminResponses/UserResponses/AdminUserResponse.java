@@ -1,14 +1,12 @@
-package fr.epita.backend.domain.entity;
+package fr.epita.backend.controller.api.response.AdminResponses.UserResponses;
 
 import java.util.UUID;
 
 import fr.epita.backend.utils.Role;
-import lombok.*;
+import lombok.Data;
 
-@Getter
-@Setter
-@NoArgsConstructor
-public class UserEntity {
+@Data
+public class AdminUserResponse {
     private UUID id;
     private String login;
     private String password;

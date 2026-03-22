@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import fr.epita.backend.controller.api.request.UserRequest;
+import fr.epita.backend.controller.api.response.AdminResponses.UserResponses.AdminUserResponse;
+import fr.epita.backend.controller.api.response.AdminResponses.UserResponses.AdminUsersResponse;
 import fr.epita.backend.controller.api.response.UserResponses.UserResponse;
 import fr.epita.backend.controller.api.response.UserResponses.UsersResponse;
 import fr.epita.backend.domain.entity.UserEntity;
@@ -15,12 +17,32 @@ public class UserControllerConverter {
     public UserResponse fromEntityToResponse(UserEntity entity) {
         UserResponse response = new UserResponse();
         response.setLogin(entity.getLogin());
+        response.setMail(entity.getMail());
+        response.setRole(entity.getRole());
+        return response;
+    }
+
+    public AdminUserResponse fromEntityToAdminResponse(UserEntity entity) {
+        AdminUserResponse response = new AdminUserResponse();
+        response.setId(entity.getId());
+        response.setLogin(entity.getLogin());
         response.setPassword(entity.getPassword());
         response.setMail(entity.getMail());
         response.setRole(entity.getRole());
         response.setToken(entity.getToken());
         response.setBanned(entity.isBanned());
         return response;
+    }
+
+    public AdminUsersResponse fromEntitiesToAdminUsersResponse(List<UserEntity> entities) {
+        AdminUsersResponse usersResponse = new AdminUsersResponse();
+        List<AdminUserResponse> responseList = new ArrayList<AdminUserResponse>();
+        for (UserEntity entity : entities) {
+            AdminUserResponse response = fromEntityToAdminResponse(entity);
+            responseList.add(response);
+        }
+        usersResponse.setList(responseList);
+        return usersResponse;
     }
 
     public UsersResponse fromEntitiesToUsersResponse(List<UserEntity> entities) {

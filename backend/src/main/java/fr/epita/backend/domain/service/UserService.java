@@ -41,6 +41,12 @@ public class UserService {
         return userDataConverter.fromModelToEntity(userModel);
     }
 
+    public UserEntity createUser(UserEntity entity) {
+        UserModel userModel = userDataConverter.fromEntityToModel(entity);
+        userRepository.save(userModel);
+        return userDataConverter.fromModelToEntity(userModel);
+    }
+
     public UserEntity updateUser(UUID id, UserEntity entity) {
         UserModel userModel = userRepository.findById(id).orElseThrow(ErrorCode.UNREGISTERED::toException);
         userDataConverter.transfertDataFromEntityToModel(userModel, entity);
