@@ -1,0 +1,12 @@
+<app-filter-bar (filterValue)="onFilterChange($event)" />
+
+<ul class="list-group">
+    @for (game of this.backendApi.gamesList(); track game.uuid) {
+        @if (game.articleName.includes(this.currentFilter()) || game.subjectGameName.includes(this.currentFilter())) {
+            <li class="list-group-item" style="margin: 10px;">
+                <app-game-card [game]="game"/>
+            </li>
+        }
+    }
+</ul>
+

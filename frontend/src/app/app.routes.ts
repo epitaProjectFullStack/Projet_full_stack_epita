@@ -1,5 +1,5 @@
 import {Routes} from '@angular/router';
 
-import {MainPage} from './components/main-page/main-page';
+import {MainPage} from './page/main-page/main-page';
 
 export const routes: Routes = [{path: '', component: MainPage}];

@@ -1,0 +1,11 @@
+<div class="card text-center">
+    <h5 class="card-header">{{this.game.articleName}}</h5>
+    <div class="card-body">
+        <h5 class="card-title">{{this.game.subjectGameName}}</h5>
+        <p class="card-text">{{
+        this.game.articleContent.slice(0, 100) 
+        + (this.game.articleContent.length > 100 ? "..." : "")}}</p>
+        <a routerLink="game" class="btn btn-primary">See More</a>
+        <footer class="blockquote-footer">By {{game.authorLogin}}</footer>
+    </div>
+</div>
