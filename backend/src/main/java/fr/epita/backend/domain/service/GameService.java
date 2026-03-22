@@ -26,16 +26,19 @@ public class GameService {
     private final GameArticleVersionRepository gameArticleVersionRepository;
     private final UserRepository userRepository;
     private final GameDataConverter gameDataConverter;
+    private final KafkaProducerService kafkaProducerService;
 
     public GameService(
             GameRepository gameRepository,
             GameArticleVersionRepository gameArticleVersionRepository,
             UserRepository userRepository,
-            GameDataConverter gameDataConverter) {
+            GameDataConverter gameDataConverter,
+            KafkaProducerService kafkaProducerService) {
         this.gameRepository = gameRepository;
         this.gameArticleVersionRepository = gameArticleVersionRepository;
         this.userRepository = userRepository;
         this.gameDataConverter = gameDataConverter;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     public List<GameEntity> getGames() {
@@ -82,6 +85,8 @@ public class GameService {
         gameModel.setCurrentVersion(versionModel);
         gameRepository.save(gameModel);
 
+        // Envoi d’un événement Kafka pour notifier qu’un jeu a été créé
+        kafkaProducerService.sendGameCreated(gameModel.getUuid().toString());
         return gameDataConverter.fromModelToEntity(gameModel);
     }
 
@@ -106,6 +111,7 @@ public class GameService {
         gameModel.setCurrentVersion(versionModel);
         gameRepository.save(gameModel);
 
+        kafkaProducerService.sendGameUpdated(gameModel.getUuid().toString());
         return gameDataConverter.fromModelToEntity(gameModel);
     }
 
@@ -138,6 +144,7 @@ public class GameService {
     public void deleteGame(UUID id) {
         GameModel gameModel = gameRepository.findById(id)
                 .orElseThrow(ErrorCode.GAME_NOT_FOUND::toException);
+        kafkaProducerService.sendGameDeleted(id.toString());
         gameRepository.delete(gameModel);
     }
 
