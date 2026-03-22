@@ -1,6 +1,5 @@
 import {HttpClient} from '@angular/common/http';
 import {inject, Injectable, signal} from '@angular/core';
-import {v4} from 'uuid';
 
 import {environment} from '../../environments/environment';
 import {Game} from '../interface/game';
@@ -16,14 +15,13 @@ export class BackendService {
   public gamesList = signal<Game[]>([])
 
   getAllGames() {
+    console.log(this.gamesList().length);
     if (this.gamesList().length === 0) {
-      this.gamesList.set([{
-        uuid: v4(),
-        authorLogin: 'oui',
-        subjectGameName: 'LoL',
-        articleName: 'Magic',
-        articleContent: 'Magic is magic!'
-      }]);
+      this.http.get<{list: Game[]}>(this.backendUrl + 'games')
+          .subscribe(response => {
+            console.log(response.list);
+            this.gamesList.set(response.list);
+          })
     }
   }
 }
