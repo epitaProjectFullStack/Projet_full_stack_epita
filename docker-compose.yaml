@@ -8,20 +8,22 @@ services:
     depends_on:
       - database
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/fullstack_db
-      - SPRING_DATASOURCE_USERNAME=username
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/postgres_db
+      - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     build: ./backend
 
   database:
     image: 'postgres:18.2-alpine'
+    ports:
+      - "5433:5432"
     environment:
-      POSTGRES_DB: fullstack_db
+      POSTGRES_DB: postgres_db
     env_file:
       - .env
     volumes:
-      - ${PWD}/db-data/:/var/lib/postgresql/data/
+      - ./db-data:/var/lib/postgresql
 
   kafka:
     image: apache/kafka-native
@@ -55,4 +57,3 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093
     depends_on:
       - kafka
-
