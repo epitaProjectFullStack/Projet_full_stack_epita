@@ -29,17 +29,9 @@ jobs:
           tag: ${{ steps.version.outputs.v-version }}
           tag_exists_error: false
 
-      - name: Build backend image
+      - name: Build app image
         uses: docker/build-push-action@v2
         with:
           push: false
-          tags: "srvf/backend:${{ steps.version.outputs.version }}"
-          context: ./backend
-        continue-on-error: true
-
-      - name: Build frontend image
-        uses: docker/build-push-action@v2
-        with:
-          push: false
-          tags: "srvf/frontend:${{ steps.version.outputs.version }}"
-          context: ./frontend
+          tags: "srvf/app:${{ steps.version.outputs.version }}"
+          context: .
