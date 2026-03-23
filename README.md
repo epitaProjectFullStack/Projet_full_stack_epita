@@ -7,7 +7,7 @@
 
 ## visualiser l'api grace a swagger
 
-- http://localhost:8080/swagger-ui/index.html    
+- http://localhost/swagger-ui/index.html
 - http://localhost:8080/v3/api-docs
 
 ## exemple body pou tester l'api
