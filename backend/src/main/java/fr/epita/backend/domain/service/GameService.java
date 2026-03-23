@@ -10,185 +10,197 @@ import fr.epita.backend.data.repository.UserRepository;
 import fr.epita.backend.domain.entity.GameArticleVersionEntity;
 import fr.epita.backend.domain.entity.GameEntity;
 import fr.epita.backend.utils.ErrorCode;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
 public class GameService {
 
-    private final GameRepository gameRepository;
-    private final GameArticleVersionRepository gameArticleVersionRepository;
-    private final UserRepository userRepository;
-    private final GameDataConverter gameDataConverter;
-    private final KafkaProducerService kafkaProducerService;
+  private final GameRepository gameRepository;
+  private final GameArticleVersionRepository gameArticleVersionRepository;
+  private final UserRepository userRepository;
+  private final GameDataConverter gameDataConverter;
+  private final KafkaProducerService kafkaProducerService;
 
-    public GameService(
-            GameRepository gameRepository,
-            GameArticleVersionRepository gameArticleVersionRepository,
-            UserRepository userRepository,
-            GameDataConverter gameDataConverter,
-            KafkaProducerService kafkaProducerService) {
-        this.gameRepository = gameRepository;
-        this.gameArticleVersionRepository = gameArticleVersionRepository;
-        this.userRepository = userRepository;
-        this.gameDataConverter = gameDataConverter;
-        this.kafkaProducerService = kafkaProducerService;
+  public GameService(GameRepository gameRepository,
+                     GameArticleVersionRepository gameArticleVersionRepository,
+                     UserRepository userRepository,
+                     GameDataConverter gameDataConverter,
+                     KafkaProducerService kafkaProducerService) {
+    this.gameRepository = gameRepository;
+    this.gameArticleVersionRepository = gameArticleVersionRepository;
+    this.userRepository = userRepository;
+    this.gameDataConverter = gameDataConverter;
+    this.kafkaProducerService = kafkaProducerService;
+  }
+
+  public List<GameEntity> getGames() {
+    List<GameEntity> entities = new ArrayList<>();
+
+    for (GameModel model : gameRepository.findAll()) {
+      entities.add(gameDataConverter.fromModelToEntity(model));
     }
 
-    public List<GameEntity> getGames() {
-        List<GameEntity> entities = new ArrayList<>();
+    return entities;
+  }
 
-        for (GameModel model : gameRepository.findAll()) {
-            entities.add(gameDataConverter.fromModelToEntity(model));
-        }
+  public GameEntity getGame(UUID id) {
+    GameModel model = gameRepository.findById(id).orElseThrow(
+        ErrorCode.GAME_NOT_FOUND::toException);
+    return gameDataConverter.fromModelToEntity(model);
+  }
 
-        return entities;
+  public List<GameArticleVersionEntity> getGameVersions(UUID id) {
+    gameRepository.findById(id).orElseThrow(
+        ErrorCode.GAME_NOT_FOUND::toException);
+
+    List<GameArticleVersionEntity> entities = new ArrayList<>();
+    for (GameArticleVersionModel model :
+         gameArticleVersionRepository.findByGameUuidOrderByVersionNumberDesc(
+             id)) {
+      entities.add(gameDataConverter.fromVersionModelToEntity(model));
     }
 
-    public GameEntity getGame(UUID id) {
-        GameModel model = gameRepository.findById(id)
-                .orElseThrow(ErrorCode.GAME_NOT_FOUND::toException);
-        return gameDataConverter.fromModelToEntity(model);
+    return entities;
+  }
+
+  @Transactional
+  public GameEntity createGame(GameEntity entity) {
+    validateWritableEntity(entity);
+    ensureGameNameAvailable(entity.getSubjectGameName());
+
+    UserModel author = findAuthor(entity.getAuthorId());
+
+    GameModel gameModel = new GameModel();
+    gameModel.setSubjectGameName(entity.getSubjectGameName());
+    gameRepository.save(gameModel);
+
+    GameArticleVersionModel versionModel =
+        buildVersion(gameModel, author, entity, 1);
+    gameArticleVersionRepository.save(versionModel);
+
+    gameModel.setCurrentVersion(versionModel);
+    gameRepository.save(gameModel);
+
+    // Envoi d’un événement Kafka pour notifier qu’un jeu a été créé
+    kafkaProducerService.sendGameCreated(gameModel.getUuid().toString());
+    return gameDataConverter.fromModelToEntity(gameModel);
+  }
+
+  @Transactional
+  public GameEntity updateGame(UUID id, GameEntity entity) {
+    validateWritableEntity(entity);
+
+    GameModel gameModel = gameRepository.findById(id).orElseThrow(
+        ErrorCode.GAME_NOT_FOUND::toException);
+    UserModel author = findAuthor(entity.getAuthorId());
+
+    if (!gameModel.getSubjectGameName().equals(entity.getSubjectGameName())) {
+      ensureGameNameAvailable(entity.getSubjectGameName());
+      gameModel.setSubjectGameName(entity.getSubjectGameName());
     }
 
-    public List<GameArticleVersionEntity> getGameVersions(UUID id) {
-        gameRepository.findById(id).orElseThrow(ErrorCode.GAME_NOT_FOUND::toException);
+    Integer nextVersion =
+        gameModel.getCurrentVersion() == null
+            ? 1
+            : gameModel.getCurrentVersion().getVersionNumber() + 1;
 
-        List<GameArticleVersionEntity> entities = new ArrayList<>();
-        for (GameArticleVersionModel model : gameArticleVersionRepository.findByGameUuidOrderByVersionNumberDesc(id)) {
-            entities.add(gameDataConverter.fromVersionModelToEntity(model));
-        }
+    GameArticleVersionModel versionModel =
+        buildVersion(gameModel, author, entity, nextVersion);
+    gameArticleVersionRepository.save(versionModel);
 
-        return entities;
-    }
+    gameModel.setCurrentVersion(versionModel);
+    gameRepository.save(gameModel);
 
-    @Transactional
-    public GameEntity createGame(GameEntity entity) {
-        validateWritableEntity(entity);
-        ensureGameNameAvailable(entity.getSubjectGameName());
+    kafkaProducerService.sendGameUpdated(gameModel.getUuid().toString());
+    return gameDataConverter.fromModelToEntity(gameModel);
+  }
 
-        UserModel author = findAuthor(entity.getAuthorId());
+  @Transactional
+  public GameEntity revertGame(UUID gameId, UUID versionId, UUID authorId) {
+    GameModel gameModel = gameRepository.findById(gameId).orElseThrow(
+        ErrorCode.GAME_NOT_FOUND::toException);
+    GameArticleVersionModel sourceVersion =
+        gameArticleVersionRepository.findByUuidAndGameUuid(versionId, gameId)
+            .orElseThrow(ErrorCode.GAME_VERSION_NOT_FOUND::toException);
+    UserModel author = findAuthor(authorId);
 
-        GameModel gameModel = new GameModel();
-        gameModel.setSubjectGameName(entity.getSubjectGameName());
-        gameRepository.save(gameModel);
+    GameEntity revertEntity = new GameEntity();
+    revertEntity.setAuthorId(authorId);
+    revertEntity.setSubjectGameName(gameModel.getSubjectGameName());
+    revertEntity.setArticleName(sourceVersion.getArticleName());
+    revertEntity.setArticleContent(sourceVersion.getArticleContent());
 
-        GameArticleVersionModel versionModel = buildVersion(gameModel, author, entity, 1);
-        gameArticleVersionRepository.save(versionModel);
+    Integer nextVersion =
+        gameModel.getCurrentVersion() == null
+            ? 1
+            : gameModel.getCurrentVersion().getVersionNumber() + 1;
 
-        gameModel.setCurrentVersion(versionModel);
-        gameRepository.save(gameModel);
+    GameArticleVersionModel versionModel =
+        buildVersion(gameModel, author, revertEntity, nextVersion);
+    gameArticleVersionRepository.save(versionModel);
 
-        // Envoi d’un événement Kafka pour notifier qu’un jeu a été créé
-        kafkaProducerService.sendGameCreated(gameModel.getUuid().toString());
-        return gameDataConverter.fromModelToEntity(gameModel);
-    }
+    gameModel.setCurrentVersion(versionModel);
+    gameRepository.save(gameModel);
 
-    @Transactional
-    public GameEntity updateGame(UUID id, GameEntity entity) {
-        validateWritableEntity(entity);
+    return gameDataConverter.fromModelToEntity(gameModel);
+  }
 
-        GameModel gameModel = gameRepository.findById(id)
-                .orElseThrow(ErrorCode.GAME_NOT_FOUND::toException);
-        UserModel author = findAuthor(entity.getAuthorId());
+  @Transactional
+  public void deleteGame(UUID id) {
+    GameModel gameModel = gameRepository.findById(id).orElseThrow(
+        ErrorCode.GAME_NOT_FOUND::toException);
+    kafkaProducerService.sendGameDeleted(id.toString());
+    gameRepository.delete(gameModel);
+  }
 
-        if (!gameModel.getSubjectGameName().equals(entity.getSubjectGameName())) {
-            ensureGameNameAvailable(entity.getSubjectGameName());
-            gameModel.setSubjectGameName(entity.getSubjectGameName());
-        }
+  private void validateWritableEntity(GameEntity entity) {
+    if (entity == null || entity.getAuthorId() == null)
+      ErrorCode.INVALID_REQUEST.throwException();
 
-        Integer nextVersion = gameModel.getCurrentVersion() == null ? 1 : gameModel.getCurrentVersion().getVersionNumber() + 1;
+    if (entity.getSubjectGameName() == null ||
+        entity.getSubjectGameName().isBlank())
+      ErrorCode.INVALID_REQUEST.throwException("subjectGameName");
 
-        GameArticleVersionModel versionModel = buildVersion(gameModel, author, entity, nextVersion);
-        gameArticleVersionRepository.save(versionModel);
+    if (entity.getArticleName() == null || entity.getArticleName().isBlank())
+      ErrorCode.INVALID_REQUEST.throwException("articleName");
 
-        gameModel.setCurrentVersion(versionModel);
-        gameRepository.save(gameModel);
+    if (entity.getArticleContent() == null ||
+        entity.getArticleContent().isBlank())
+      ErrorCode.INVALID_REQUEST.throwException("articleContent");
+  }
 
-        kafkaProducerService.sendGameUpdated(gameModel.getUuid().toString());
-        return gameDataConverter.fromModelToEntity(gameModel);
-    }
+  private UserModel findAuthor(UUID authorId) {
+    UserModel author = userRepository.findById(authorId).orElseThrow(
+        ErrorCode.USER_NOT_FOUND::toException);
 
-    @Transactional
-    public GameEntity revertGame(UUID gameId, UUID versionId, UUID authorId) {
-        GameModel gameModel = gameRepository.findById(gameId)
-                .orElseThrow(ErrorCode.GAME_NOT_FOUND::toException);
-        GameArticleVersionModel sourceVersion = gameArticleVersionRepository.findByUuidAndGameUuid(versionId, gameId)
-                .orElseThrow(ErrorCode.GAME_VERSION_NOT_FOUND::toException);
-        UserModel author = findAuthor(authorId);
+    if (author.isBanned())
+      ErrorCode.BANNED_USER.throwException();
 
-        GameEntity revertEntity = new GameEntity();
-        revertEntity.setAuthorId(authorId);
-        revertEntity.setSubjectGameName(gameModel.getSubjectGameName());
-        revertEntity.setArticleName(sourceVersion.getArticleName());
-        revertEntity.setArticleContent(sourceVersion.getArticleContent());
+    return author;
+  }
 
-        Integer nextVersion = gameModel.getCurrentVersion() == null ? 1 : gameModel.getCurrentVersion().getVersionNumber() + 1;
+  private void ensureGameNameAvailable(String subjectGameName) {
+    if (gameRepository.findBySubjectGameName(subjectGameName).isPresent())
+      ErrorCode.GAME_ALREADY_EXISTS.throwException();
+  }
 
-        GameArticleVersionModel versionModel = buildVersion(gameModel, author, revertEntity, nextVersion);
-        gameArticleVersionRepository.save(versionModel);
-
-        gameModel.setCurrentVersion(versionModel);
-        gameRepository.save(gameModel);
-
-        return gameDataConverter.fromModelToEntity(gameModel);
-    }
-
-    @Transactional
-    public void deleteGame(UUID id) {
-        GameModel gameModel = gameRepository.findById(id)
-                .orElseThrow(ErrorCode.GAME_NOT_FOUND::toException);
-        kafkaProducerService.sendGameDeleted(id.toString());
-        gameRepository.delete(gameModel);
-    }
-
-    private void validateWritableEntity(GameEntity entity) {
-        if (entity == null || entity.getAuthorId() == null)
-            ErrorCode.INVALID_REQUEST.throwException();
-
-        if (entity.getSubjectGameName() == null || entity.getSubjectGameName().isBlank())
-            ErrorCode.INVALID_REQUEST.throwException("subjectGameName");
-
-        if (entity.getArticleName() == null || entity.getArticleName().isBlank())
-            ErrorCode.INVALID_REQUEST.throwException("articleName");
-
-        if (entity.getArticleContent() == null || entity.getArticleContent().isBlank())
-            ErrorCode.INVALID_REQUEST.throwException("articleContent");
-    }
-
-    private UserModel findAuthor(UUID authorId) {
-        UserModel author = userRepository.findById(authorId)
-                .orElseThrow(ErrorCode.USER_NOT_FOUND::toException);
-
-        if (author.isBanned())
-            ErrorCode.BANNED_USER.throwException();
-
-        return author;
-    }
-
-    private void ensureGameNameAvailable(String subjectGameName) {
-        if (gameRepository.findBySubjectGameName(subjectGameName).isPresent())
-            ErrorCode.GAME_ALREADY_EXISTS.throwException();
-    }
-
-    private GameArticleVersionModel buildVersion(
-            GameModel gameModel,
-            UserModel author,
-            GameEntity entity,
-            Integer versionNumber) {
-        GameArticleVersionModel versionModel = new GameArticleVersionModel();
-        versionModel.setGame(gameModel);
-        versionModel.setAuthor(author);
-        versionModel.setArticleName(entity.getArticleName());
-        versionModel.setArticleContent(entity.getArticleContent());
-        versionModel.setVersionNumber(versionNumber);
-        versionModel.setCreatedAt(Instant.now());
-        return versionModel;
-    }
+  private GameArticleVersionModel buildVersion(GameModel gameModel,
+                                               UserModel author,
+                                               GameEntity entity,
+                                               Integer versionNumber) {
+    GameArticleVersionModel versionModel = new GameArticleVersionModel();
+    versionModel.setGame(gameModel);
+    versionModel.setAuthor(author);
+    versionModel.setArticleName(entity.getArticleName());
+    versionModel.setArticleContent(entity.getArticleContent());
+    versionModel.setVersionNumber(versionNumber);
+    versionModel.setCreatedAt(Instant.now());
+    return versionModel;
+  }
 }

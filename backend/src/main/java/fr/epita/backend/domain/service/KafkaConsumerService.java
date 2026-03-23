@@ -1,4 +1,4 @@
-package fr.epita.backend.kafka;
+package fr.epita.backend.domain.service;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaConsumerService {
 
-    @KafkaListener(topics = "game-events", groupId = "game-group")
-    public void listen(String message) {
+  @KafkaListener(topics = "game-events", groupId = "game-group")
+  public void listen(String message) {
 
-        // WHY: preuve que Kafka fonctionne
-        System.out.println("EVENT RECEIVED: " + message);
-    }
+    // WHY: preuve que Kafka fonctionne
+    System.out.println("EVENT RECEIVED: " + message);
+  }
 }
