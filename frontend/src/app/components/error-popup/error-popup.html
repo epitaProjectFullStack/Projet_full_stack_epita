@@ -1,0 +1,12 @@
+<ul class="alert-container no-bullets">
+    @for (item of this.errorService.errorMessages(); track $index) {
+        <li>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{item}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </li>
+    }
+</ul>
