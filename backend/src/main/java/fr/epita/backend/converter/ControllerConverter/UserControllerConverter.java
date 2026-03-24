@@ -16,6 +16,7 @@ import fr.epita.backend.domain.entity.UserEntity;
 public class UserControllerConverter {
     public UserResponse fromEntityToResponse(UserEntity entity) {
         UserResponse response = new UserResponse();
+        response.setId(entity.getId());
         response.setLogin(entity.getLogin());
         response.setMail(entity.getMail());
         response.setRole(entity.getRole());

@@ -28,10 +28,10 @@ public class GameService {
   private final KafkaProducerService kafkaProducerService;
 
   public GameService(GameRepository gameRepository,
-                     GameArticleVersionRepository gameArticleVersionRepository,
-                     UserRepository userRepository,
-                     GameDataConverter gameDataConverter,
-                     KafkaProducerService kafkaProducerService) {
+      GameArticleVersionRepository gameArticleVersionRepository,
+      UserRepository userRepository,
+      GameDataConverter gameDataConverter,
+      KafkaProducerService kafkaProducerService) {
     this.gameRepository = gameRepository;
     this.gameArticleVersionRepository = gameArticleVersionRepository;
     this.userRepository = userRepository;
@@ -60,9 +60,8 @@ public class GameService {
         ErrorCode.GAME_NOT_FOUND::toException);
 
     List<GameArticleVersionEntity> entities = new ArrayList<>();
-    for (GameArticleVersionModel model :
-         gameArticleVersionRepository.findByGameUuidOrderByVersionNumberDesc(
-             id)) {
+    for (GameArticleVersionModel model : gameArticleVersionRepository.findByGameUuidOrderByVersionNumberDesc(
+        id)) {
       entities.add(gameDataConverter.fromVersionModelToEntity(model));
     }
 
@@ -80,15 +79,14 @@ public class GameService {
     gameModel.setSubjectGameName(entity.getSubjectGameName());
     gameRepository.save(gameModel);
 
-    GameArticleVersionModel versionModel =
-        buildVersion(gameModel, author, entity, 1);
+    GameArticleVersionModel versionModel = buildVersion(gameModel, author, entity, 1);
     gameArticleVersionRepository.save(versionModel);
 
     gameModel.setCurrentVersion(versionModel);
     gameRepository.save(gameModel);
 
-    // Envoi d’un événement Kafka pour notifier qu’un jeu a été créé
-    kafkaProducerService.sendGameCreated(gameModel.getUuid().toString());
+    // // Envoi d’un événement Kafka pour notifier qu’un jeu a été créé
+    // kafkaProducerService.sendGameCreated(gameModel.getUuid().toString());
     return gameDataConverter.fromModelToEntity(gameModel);
   }
 
@@ -105,13 +103,11 @@ public class GameService {
       gameModel.setSubjectGameName(entity.getSubjectGameName());
     }
 
-    Integer nextVersion =
-        gameModel.getCurrentVersion() == null
-            ? 1
-            : gameModel.getCurrentVersion().getVersionNumber() + 1;
+    Integer nextVersion = gameModel.getCurrentVersion() == null
+        ? 1
+        : gameModel.getCurrentVersion().getVersionNumber() + 1;
 
-    GameArticleVersionModel versionModel =
-        buildVersion(gameModel, author, entity, nextVersion);
+    GameArticleVersionModel versionModel = buildVersion(gameModel, author, entity, nextVersion);
     gameArticleVersionRepository.save(versionModel);
 
     gameModel.setCurrentVersion(versionModel);
@@ -125,9 +121,8 @@ public class GameService {
   public GameEntity revertGame(UUID gameId, UUID versionId, UUID authorId) {
     GameModel gameModel = gameRepository.findById(gameId).orElseThrow(
         ErrorCode.GAME_NOT_FOUND::toException);
-    GameArticleVersionModel sourceVersion =
-        gameArticleVersionRepository.findByUuidAndGameUuid(versionId, gameId)
-            .orElseThrow(ErrorCode.GAME_VERSION_NOT_FOUND::toException);
+    GameArticleVersionModel sourceVersion = gameArticleVersionRepository.findByUuidAndGameUuid(versionId, gameId)
+        .orElseThrow(ErrorCode.GAME_VERSION_NOT_FOUND::toException);
     UserModel author = findAuthor(authorId);
 
     GameEntity revertEntity = new GameEntity();
@@ -136,13 +131,11 @@ public class GameService {
     revertEntity.setArticleName(sourceVersion.getArticleName());
     revertEntity.setArticleContent(sourceVersion.getArticleContent());
 
-    Integer nextVersion =
-        gameModel.getCurrentVersion() == null
-            ? 1
-            : gameModel.getCurrentVersion().getVersionNumber() + 1;
+    Integer nextVersion = gameModel.getCurrentVersion() == null
+        ? 1
+        : gameModel.getCurrentVersion().getVersionNumber() + 1;
 
-    GameArticleVersionModel versionModel =
-        buildVersion(gameModel, author, revertEntity, nextVersion);
+    GameArticleVersionModel versionModel = buildVersion(gameModel, author, revertEntity, nextVersion);
     gameArticleVersionRepository.save(versionModel);
 
     gameModel.setCurrentVersion(versionModel);
@@ -191,9 +184,9 @@ public class GameService {
   }
 
   private GameArticleVersionModel buildVersion(GameModel gameModel,
-                                               UserModel author,
-                                               GameEntity entity,
-                                               Integer versionNumber) {
+      UserModel author,
+      GameEntity entity,
+      Integer versionNumber) {
     GameArticleVersionModel versionModel = new GameArticleVersionModel();
     versionModel.setGame(gameModel);
     versionModel.setAuthor(author);
