@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import fr.epita.backend.converter.DataConverter.UserDataConverter;
@@ -42,12 +43,25 @@ public class UserService {
     }
 
     public UserEntity createUser(UserEntity entity) {
+        if (entity.getLogin() == null || entity.getMail() == null || entity.getPassword() == null)
+            ErrorCode.INVALID_REQUEST.throwException();
         UserModel userModel = userDataConverter.fromEntityToModel(entity);
-        userRepository.save(userModel);
+        if (userRepository.findByLogin(entity.getLogin()).isPresent())
+            ErrorCode.LOGIN_ALREADY_EXISTS.throwException();
+        if (userRepository.findByMail(entity.getMail()).isPresent())
+            ErrorCode.MAIL_ALREADY_EXISTS.throwException();
+
+        try {
+            userRepository.save(userModel);
+        } catch (DataIntegrityViolationException e) {
+            ErrorCode.USER_ALREADY_EXISTS.throwException();
+        }
         return userDataConverter.fromModelToEntity(userModel);
     }
 
     public UserEntity updateUser(UUID id, UserEntity entity) {
+        if (entity.getLogin() == null || entity.getMail() == null || entity.getPassword() == null)
+            ErrorCode.INVALID_REQUEST.throwException();
         UserModel userModel = userRepository.findById(id).orElseThrow(ErrorCode.UNREGISTERED::toException);
         userDataConverter.transfertDataFromEntityToModel(userModel, entity);
         userRepository.save(userModel);
