@@ -16,10 +16,14 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional(readOnly = true)
 public class GameService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(GameService.class);
 
   private final GameRepository gameRepository;
   private final GameArticleVersionRepository gameArticleVersionRepository;
@@ -85,8 +89,8 @@ public class GameService {
     gameModel.setCurrentVersion(versionModel);
     gameRepository.save(gameModel);
 
-    // // Envoi d’un événement Kafka pour notifier qu’un jeu a été créé
-    // kafkaProducerService.sendGameCreated(gameModel.getUuid().toString());
+    kafkaProducerService.sendGameCreated(gameModel.getUuid());
+
     return gameDataConverter.fromModelToEntity(gameModel);
   }
 
@@ -113,7 +117,7 @@ public class GameService {
     gameModel.setCurrentVersion(versionModel);
     gameRepository.save(gameModel);
 
-    kafkaProducerService.sendGameUpdated(gameModel.getUuid().toString());
+    // kafkaProducerService.sendGameUpdated(gameModel.getUuid().toString());
     return gameDataConverter.fromModelToEntity(gameModel);
   }
 
@@ -148,7 +152,7 @@ public class GameService {
   public void deleteGame(UUID id) {
     GameModel gameModel = gameRepository.findById(id).orElseThrow(
         ErrorCode.GAME_NOT_FOUND::toException);
-    kafkaProducerService.sendGameDeleted(id.toString());
+    // kafkaProducerService.sendGameDeleted(id.toString());
     gameRepository.delete(gameModel);
   }
 
