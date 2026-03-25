@@ -1,4 +1,4 @@
-package fr.epita.backend.controller.UserControllerIT;
+package fr.epita.backend.controller.UserController;
 
 import fr.epita.backend.controller.api.request.UserRequest;
 import fr.epita.backend.controller.api.response.UserResponses.UserResponse;
