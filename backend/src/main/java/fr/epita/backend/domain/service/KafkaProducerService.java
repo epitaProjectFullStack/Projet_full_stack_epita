@@ -1,7 +1,14 @@
 package fr.epita.backend.domain.service;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import fr.epita.backend.domain.event.GameEvent;
+import fr.epita.backend.domain.event.GameEventMessage;
+import fr.epita.backend.utils.KafkaTopics;
 
 /**
  * WHY:
@@ -14,9 +21,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaProducerService {
 
-  private final KafkaTemplate<String, String> kafkaTemplate;
+  private final KafkaTemplate<String, GameEventMessage> kafkaTemplate;
 
-  public KafkaProducerService(KafkaTemplate<String, String> kafkaTemplate) {
+  public KafkaProducerService(KafkaTemplate<String, GameEventMessage> kafkaTemplate) {
     this.kafkaTemplate = kafkaTemplate;
   }
 
@@ -27,8 +34,9 @@ public class KafkaProducerService {
    * HOW:
    * Envoie un message simple dans le topic "game-events"
    */
-  public void sendGameCreated(String gameId) {
-    kafkaTemplate.send("game-events", "GAME_CREATED:" + gameId);
+  public void sendGameCreated(UUID gameId) {
+    GameEventMessage kafkamessage = new GameEventMessage(GameEvent.GAME_CREATED, gameId, Instant.now());
+    kafkaTemplate.send(KafkaTopics.GAME_EVENTS, kafkamessage);
   }
 
   /**
@@ -36,7 +44,9 @@ public class KafkaProducerService {
    * Envoyer un événement de modification
    */
   public void sendGameUpdated(String gameId) {
-    kafkaTemplate.send("game-events", "GAME_UPDATED:" + gameId);
+    GameEventMessage kafkamessage = new GameEventMessage(GameEvent.GAME_UPDATED, UUID.fromString(gameId),
+        Instant.now());
+    kafkaTemplate.send(KafkaTopics.GAME_EVENTS, kafkamessage);
   }
 
   /**
@@ -44,6 +54,8 @@ public class KafkaProducerService {
    * Envoyer un événement de suppression
    */
   public void sendGameDeleted(String gameId) {
-    kafkaTemplate.send("game-events", "GAME_DELETED:" + gameId);
+    GameEventMessage kafkamessage = new GameEventMessage(GameEvent.GAME_DELETED, UUID.fromString(gameId),
+        Instant.now());
+    kafkaTemplate.send(KafkaTopics.GAME_EVENTS, kafkamessage);
   }
 }

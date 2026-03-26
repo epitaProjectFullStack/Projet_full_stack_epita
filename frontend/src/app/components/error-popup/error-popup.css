@@ -1,0 +1,14 @@
+ul.alert-container {
+    position: absolute;
+    right: 0;
+}
+
+.alert {
+    width: 25vw;
+}
+
+ul.no-bullets {
+  list-style-type: none; /* Remove bullets */
+  padding: 0; /* Remove padding */
+  margin: 0; /* Remove margins */
+}

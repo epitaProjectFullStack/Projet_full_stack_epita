@@ -9,6 +9,9 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public enum ErrorCode {
     BAD_CREDENTIAL(HttpStatus.UNAUTHORIZED, "Bad credentials"),
+    LOGIN_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "Login already exist"),
+    MAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "Mail already exist"),
+    USER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "Mail or Login already exist"),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Invalid request"),
     UNREGISTERED(HttpStatus.BAD_REQUEST, "User inconnu"),
     BANNED_USER(HttpStatus.FORBIDDEN, "User is banned"),

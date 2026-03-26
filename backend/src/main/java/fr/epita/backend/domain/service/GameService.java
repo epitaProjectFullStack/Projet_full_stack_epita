@@ -16,10 +16,14 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional(readOnly = true)
 public class GameService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(GameService.class);
 
   private final GameRepository gameRepository;
   private final GameArticleVersionRepository gameArticleVersionRepository;
@@ -28,10 +32,10 @@ public class GameService {
   private final KafkaProducerService kafkaProducerService;
 
   public GameService(GameRepository gameRepository,
-                     GameArticleVersionRepository gameArticleVersionRepository,
-                     UserRepository userRepository,
-                     GameDataConverter gameDataConverter,
-                     KafkaProducerService kafkaProducerService) {
+      GameArticleVersionRepository gameArticleVersionRepository,
+      UserRepository userRepository,
+      GameDataConverter gameDataConverter,
+      KafkaProducerService kafkaProducerService) {
     this.gameRepository = gameRepository;
     this.gameArticleVersionRepository = gameArticleVersionRepository;
     this.userRepository = userRepository;
@@ -60,9 +64,8 @@ public class GameService {
         ErrorCode.GAME_NOT_FOUND::toException);
 
     List<GameArticleVersionEntity> entities = new ArrayList<>();
-    for (GameArticleVersionModel model :
-         gameArticleVersionRepository.findByGameUuidOrderByVersionNumberDesc(
-             id)) {
+    for (GameArticleVersionModel model : gameArticleVersionRepository.findByGameUuidOrderByVersionNumberDesc(
+        id)) {
       entities.add(gameDataConverter.fromVersionModelToEntity(model));
     }
 
@@ -80,15 +83,14 @@ public class GameService {
     gameModel.setSubjectGameName(entity.getSubjectGameName());
     gameRepository.save(gameModel);
 
-    GameArticleVersionModel versionModel =
-        buildVersion(gameModel, author, entity, 1);
+    GameArticleVersionModel versionModel = buildVersion(gameModel, author, entity, 1);
     gameArticleVersionRepository.save(versionModel);
 
     gameModel.setCurrentVersion(versionModel);
     gameRepository.save(gameModel);
 
-    // Envoi d’un événement Kafka pour notifier qu’un jeu a été créé
-    kafkaProducerService.sendGameCreated(gameModel.getUuid().toString());
+    kafkaProducerService.sendGameCreated(gameModel.getUuid());
+
     return gameDataConverter.fromModelToEntity(gameModel);
   }
 
@@ -105,19 +107,17 @@ public class GameService {
       gameModel.setSubjectGameName(entity.getSubjectGameName());
     }
 
-    Integer nextVersion =
-        gameModel.getCurrentVersion() == null
-            ? 1
-            : gameModel.getCurrentVersion().getVersionNumber() + 1;
+    Integer nextVersion = gameModel.getCurrentVersion() == null
+        ? 1
+        : gameModel.getCurrentVersion().getVersionNumber() + 1;
 
-    GameArticleVersionModel versionModel =
-        buildVersion(gameModel, author, entity, nextVersion);
+    GameArticleVersionModel versionModel = buildVersion(gameModel, author, entity, nextVersion);
     gameArticleVersionRepository.save(versionModel);
 
     gameModel.setCurrentVersion(versionModel);
     gameRepository.save(gameModel);
 
-    kafkaProducerService.sendGameUpdated(gameModel.getUuid().toString());
+    // kafkaProducerService.sendGameUpdated(gameModel.getUuid().toString());
     return gameDataConverter.fromModelToEntity(gameModel);
   }
 
@@ -125,9 +125,8 @@ public class GameService {
   public GameEntity revertGame(UUID gameId, UUID versionId, UUID authorId) {
     GameModel gameModel = gameRepository.findById(gameId).orElseThrow(
         ErrorCode.GAME_NOT_FOUND::toException);
-    GameArticleVersionModel sourceVersion =
-        gameArticleVersionRepository.findByUuidAndGameUuid(versionId, gameId)
-            .orElseThrow(ErrorCode.GAME_VERSION_NOT_FOUND::toException);
+    GameArticleVersionModel sourceVersion = gameArticleVersionRepository.findByUuidAndGameUuid(versionId, gameId)
+        .orElseThrow(ErrorCode.GAME_VERSION_NOT_FOUND::toException);
     UserModel author = findAuthor(authorId);
 
     GameEntity revertEntity = new GameEntity();
@@ -136,13 +135,11 @@ public class GameService {
     revertEntity.setArticleName(sourceVersion.getArticleName());
     revertEntity.setArticleContent(sourceVersion.getArticleContent());
 
-    Integer nextVersion =
-        gameModel.getCurrentVersion() == null
-            ? 1
-            : gameModel.getCurrentVersion().getVersionNumber() + 1;
+    Integer nextVersion = gameModel.getCurrentVersion() == null
+        ? 1
+        : gameModel.getCurrentVersion().getVersionNumber() + 1;
 
-    GameArticleVersionModel versionModel =
-        buildVersion(gameModel, author, revertEntity, nextVersion);
+    GameArticleVersionModel versionModel = buildVersion(gameModel, author, revertEntity, nextVersion);
     gameArticleVersionRepository.save(versionModel);
 
     gameModel.setCurrentVersion(versionModel);
@@ -155,7 +152,7 @@ public class GameService {
   public void deleteGame(UUID id) {
     GameModel gameModel = gameRepository.findById(id).orElseThrow(
         ErrorCode.GAME_NOT_FOUND::toException);
-    kafkaProducerService.sendGameDeleted(id.toString());
+    // kafkaProducerService.sendGameDeleted(id.toString());
     gameRepository.delete(gameModel);
   }
 
@@ -191,9 +188,9 @@ public class GameService {
   }
 
   private GameArticleVersionModel buildVersion(GameModel gameModel,
-                                               UserModel author,
-                                               GameEntity entity,
-                                               Integer versionNumber) {
+      UserModel author,
+      GameEntity entity,
+      Integer versionNumber) {
     GameArticleVersionModel versionModel = new GameArticleVersionModel();
     versionModel.setGame(gameModel);
     versionModel.setAuthor(author);

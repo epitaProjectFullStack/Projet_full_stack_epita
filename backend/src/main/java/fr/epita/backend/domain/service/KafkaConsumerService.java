@@ -1,5 +1,9 @@
 package fr.epita.backend.domain.service;
 
+import fr.epita.backend.domain.event.GameEventMessage;
+import fr.epita.backend.utils.KafkaTopics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +17,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaConsumerService {
 
-  @KafkaListener(topics = "game-events", groupId = "game-group")
-  public void listen(String message) {
+  private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConsumerService.class);
+
+  @KafkaListener(topics = KafkaTopics.GAME_EVENTS)
+  public void listen(GameEventMessage message) {
 
     // WHY: preuve que Kafka fonctionne
-    System.out.println("EVENT RECEIVED: " + message);
+    LOGGER.info("EVENT RECEIVED: {}", message);
   }
 }
