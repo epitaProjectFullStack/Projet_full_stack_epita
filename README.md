@@ -28,3 +28,7 @@
 
 ## KAFKA UI
 - http://localhost:8080/ui/clusters/local
+
+## COMMANDE dans le  CMD POUR VOIR LE POURCENTAGE DE TEST avec jacoco
+
+- xdg-open target/site/jacoco/index.html
