@@ -5,18 +5,13 @@
 - docker-compose up
 - mvn spring-boot:run
 
+## POUR TESTER LE BUILD AVANT DE POUSSER
+- ./mvnw clean verify
+
 ## visualiser l'api grace a swagger
 
 - http://localhost/swagger-ui/index.html
 - http://localhost/v3/api-docs
-
-## exemple body pou tester l'api
-{
-  "authorId": "UUID_ICI",
-  "subjectGameName": "Zelda",
-  "articleName": "Test",
-  "articleContent": "Test content"
-}
 
 ## projet configurer avec java 21
 - sudo apt install openjdk-21-jdk
@@ -26,6 +21,10 @@
 
 - mvn clean test
 - mvn clean install
+
 ## RESTART PROPRE
 - docker-compose down -v
 - docker-compose up --build
+
+## KAFKA UI
+- http://localhost:8080/ui/clusters/local

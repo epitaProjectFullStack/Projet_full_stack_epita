@@ -24,8 +24,14 @@ public class AuthController {
 
     @PostMapping("/auth")
     public ResponseEntity<AuthResponse> auth(@RequestBody AuthRequest request) {
-        if (request == null)
-            ErrorCode.BAD_CREDENTIAL.throwException();
+        // WHY:
+        // Validation des entrées (évite appels invalides au service)
+        if (request == null ||
+            request.getLogin() == null ||
+            request.getPassword() == null) {
+
+            ErrorCode.INVALID_REQUEST.throwException();
+        }
         UserEntity user = authService.auth(request.getLogin(), request.getPassword());
         AuthResponse response = authConverter.FromEntityToAuthResponse(user);
         return ResponseEntity.ok(response);

@@ -43,7 +43,6 @@ class GameServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(gameRepository.findBySubjectGameName("Zelda")).thenReturn(Optional.empty());
 
-        // 🔥 CORRECTION ICI
         when(gameRepository.save(any())).thenAnswer(invocation -> {
             GameModel m = invocation.getArgument(0);
             m.setUuid(UUID.randomUUID()); // simule JPA
