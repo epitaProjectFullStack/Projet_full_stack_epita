@@ -1,0 +1,12 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" routerLink="/"><span>WikiGames</span></a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    @for (item of routes; track $index) {
+                        <li class="nav-item"><a class="nav-link" routerLink="{{item.route.path}}">{{item.name}}</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+</nav>
