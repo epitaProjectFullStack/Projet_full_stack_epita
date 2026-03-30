@@ -1,0 +1,40 @@
+<div class="container">
+    <h3>SignIn</h3>
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+        <label for="username" class="form-label">Username</label>
+        <input
+        type="text"
+        class="form-control"
+        id="validationCustom01"
+        placeholder="Username"
+        name="username"
+        formControlName="username"
+        [class.is-invalid]="loginForm.controls['username'].invalid && loginForm.controls['username'].touched"
+        required
+        />
+        @if (loginForm.controls['username'].invalid) {
+            <div class="invalid-feedback">
+                Please Enter Username
+            </div>
+        }
+
+        <label for="password" class="form-label">Password</label>
+        <input
+        type="password"
+        class="form-control"
+        id="validationCustom02"
+        placeholder="Password"
+        name="password"
+        formControlName="password"
+        [class.is-invalid]="loginForm.controls['password'].invalid && loginForm.controls['password'].touched"
+        required
+        />
+        @if (loginForm.controls['password'].invalid) {
+            <div class="invalid-feedback">
+                Please Enter Password
+            </div>
+        }
+
+        <input type="submit" class="btn btn-primary" value="Login"/>
+    </form>
+</div>
