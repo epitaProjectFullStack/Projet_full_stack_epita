@@ -1,22 +1,26 @@
 import {Component, ViewChild} from '@angular/core';
-import {FormsModule} from '@angular/forms';
+import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 
 import {ArticleEditor} from '../../components/article-editor/article-editor';
 
 @Component({
   selector: 'app-article-new',
-  imports: [ArticleEditor, FormsModule],
+  imports: [ArticleEditor, FormsModule, ReactiveFormsModule],
   templateUrl: './article-new.html',
   styleUrl: './article-new.css',
 })
 export class ArticleNew {
-  gameName: string = '';
-  articleName: string = '';
+  articleForm = new FormGroup({
+    articleName: new FormControl('', [Validators.required]),
+    gameName: new FormControl('', [Validators.required]),
+  });
 
   @ViewChild(ArticleEditor) private articleEditor!: ArticleEditor;
 
   protected onCreateClick() {
-    console.log(`Creating article ${this.articleName} about game ${
-        this.gameName} with html:\n${this.articleEditor.html}`);
+    if (this.articleForm.valid) {
+      console.log(this.articleForm.value);
+      console.log(this.articleEditor.html);
+    }
   }
 }
