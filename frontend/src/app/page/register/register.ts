@@ -33,10 +33,12 @@ export class Register {
     this.registerFinish.set(false);
 
     if (this.registerForm.valid) {
-      this.backendService.postRegister(
-          this.registerForm.get('username')?.value,
-          this.registerForm.get('password')?.value,
-          this.registerForm.get('email')?.value, () => {
+      this.backendService
+          .postRegister(
+              this.registerForm.get('username')?.value,
+              this.registerForm.get('password')?.value,
+              this.registerForm.get('email')?.value)
+          .subscribe(() => {
             this.registerFinish.set(true);
           })
     }
