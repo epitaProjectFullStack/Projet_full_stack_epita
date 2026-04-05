@@ -21,10 +21,11 @@ export class Signin {
 
   onLogin() {
     if (this.loginForm.valid) {
-      this.backendService.postLogin(
-          this.loginForm.get('username')?.value,
-          this.loginForm.get('password')?.value,
-          () => {this.router.navigate(['/'])})
+      this.backendService
+          .postLogin(
+              this.loginForm.get('username')?.value,
+              this.loginForm.get('password')?.value)
+          .subscribe(() => {this.router.navigate(['/'])});
     }
   }
 }

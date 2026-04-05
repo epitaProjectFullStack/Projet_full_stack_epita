@@ -1,20 +1,16 @@
 import {HttpClient} from '@angular/common/http';
 import {inject, Injectable, signal} from '@angular/core';
-import {Observable} from 'rxjs';
+import {Observable, shareReplay} from 'rxjs';
 
 import {environment} from '../../environments/environment';
 import {Game} from '../interface/game';
 
-import {ErrorHandling} from './error-handling';
-
-export type NextCallback = (response: any) => void;
 
 @Injectable({
   providedIn: 'root',
 })
 export class BackendService {
   private http = inject(HttpClient);
-  private errorHandling = inject(ErrorHandling);
 
   private backendUrl = environment.apiUrl;
   private token: string|null = null;
@@ -31,18 +27,7 @@ export class BackendService {
     headers['content-type'] = 'application/json';
     const bodyJson = JSON.stringify(body);
 
-    console.log(`POST ${url}`);
-    console.log(body);
     return this.http.post<T>(url, bodyJson, {headers: headers});
-  }
-
-
-  private errorHandlerFactory(endpoint: string) {
-    return (e: any) => {
-      console.error(`Error on ${endpoint}`);
-      console.error(e);
-      this.errorHandling.addMessage(e.message);
-    }
   }
 
   getAllGames() {
@@ -52,34 +37,33 @@ export class BackendService {
         next: response => {
           console.log(response.list);
           this.gamesList.set(response.list);
-        },
-        error: this.errorHandlerFactory('Get All Games')
+        }
       });
     }
   }
 
-  postRegister(
-      login: string, password: string, email: string, callback: NextCallback) {
-    this.createPost<void>(
-            this.backendUrl + 'auth/register',
-            {username: login, password: password, email: email})
-        .subscribe(
-            {next: callback, error: this.errorHandlerFactory('Post Register')});
+  postRegister(login: string, password: string, email: string) {
+    return this.createPost<void>(
+        this.backendUrl + 'auth/register',
+        {username: login, password: password, email: email});
   }
 
-  postLogin(login: string, password: string, callback: NextCallback) {
+  postLogin(login: string, password: string) {
     const request = this.createPost<{token: string}>(
         this.backendUrl + 'auth/login', {login: login, password: password});
 
-    request.subscribe({
+    const replay = request.pipe(shareReplay(1))
+    replay.subscribe({
       next: (t) => {
         this.token = t.token;
         console.log(`Set JWT to ${this.token}`);
-        callback(t);
-      },
-      error: this.errorHandlerFactory('Post Login')
+      }
     });
 
-    return request;
+    return replay;
+  }
+
+  getToken() {
+    return this.token;
   }
 }
