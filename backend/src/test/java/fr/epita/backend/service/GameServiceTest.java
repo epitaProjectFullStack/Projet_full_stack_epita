@@ -26,8 +26,8 @@ class GameServiceTest {
     private final GameDataConverter converter = mock(GameDataConverter.class);
     private final KafkaProducerService kafka = mock(KafkaProducerService.class);
 
-    private final GameService service =
-            new GameService(gameRepository, versionRepository, userRepository, converter, kafka);
+    private final GameService service = new GameService(gameRepository, versionRepository, userRepository, converter,
+            kafka);
 
     @Test
     void createGame_should_work() {
@@ -63,7 +63,7 @@ class GameServiceTest {
 
         when(converter.fromModelToEntity(any())).thenReturn(new GameEntity());
 
-        // HOW: 
+        // HOW:
         // -appel réel du service
         // -puis on verifie les interactions
 

@@ -16,14 +16,10 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional(readOnly = true)
 public class GameService {
-
-  //private static final Logger LOGGER = LoggerFactory.getLogger(GameService.class);
 
   private final GameRepository gameRepository;
   private final GameArticleVersionRepository gameArticleVersionRepository;

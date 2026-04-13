@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import fr.epita.backend.converter.DataConverter.UserDataConverter;
 
@@ -19,10 +20,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserDataConverter userDataConverter;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, UserDataConverter userDataConverter) {
+    public UserService(UserRepository userRepository, UserDataConverter userDataConverter,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userDataConverter = userDataConverter;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserEntity> getUsers() {
@@ -46,6 +50,7 @@ public class UserService {
         if (entity.getLogin() == null || entity.getMail() == null || entity.getPassword() == null)
             ErrorCode.INVALID_REQUEST.throwException();
         UserModel userModel = userDataConverter.fromEntityToModel(entity);
+        userModel.setPassword(passwordEncoder.encode(entity.getPassword()));
         if (userRepository.findByLogin(entity.getLogin()).isPresent())
             ErrorCode.LOGIN_ALREADY_EXISTS.throwException();
         if (userRepository.findByMail(entity.getMail()).isPresent())
@@ -64,6 +69,8 @@ public class UserService {
             ErrorCode.INVALID_REQUEST.throwException();
         UserModel userModel = userRepository.findById(id).orElseThrow(ErrorCode.UNREGISTERED::toException);
         userDataConverter.transfertDataFromEntityToModel(userModel, entity);
+        userModel.setPassword(passwordEncoder.encode(entity.getPassword()));
+
         userRepository.save(userModel);
         return userDataConverter.fromModelToEntity(userModel);
     }
