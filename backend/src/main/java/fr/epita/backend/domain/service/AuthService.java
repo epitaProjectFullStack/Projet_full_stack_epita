@@ -5,6 +5,8 @@ import fr.epita.backend.data.repository.UserRepository;
 import fr.epita.backend.domain.entity.UserEntity;
 import fr.epita.backend.utils.ErrorCode;
 import fr.epita.backend.converter.DataConverter.UserDataConverter;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,10 +14,15 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final UserDataConverter userDataConverter;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
-    public AuthService(UserRepository userRepository, UserDataConverter userDataConverter) {
+    public AuthService(UserRepository userRepository, UserDataConverter userDataConverter,
+            PasswordEncoder passwordEncoder, TokenService tokenService) {
         this.userRepository = userRepository;
         this.userDataConverter = userDataConverter;
+        this.passwordEncoder = passwordEncoder;
+        this.tokenService = tokenService;
     }
 
     public UserEntity auth(String login, String password) {
@@ -28,9 +35,12 @@ public class AuthService {
         if (userModel.isBanned())
             ErrorCode.BANNED_USER.throwException();
 
-        if (!userModel.getPassword().equals(password))
+        if (!passwordEncoder.matches(password, userModel.getPassword()))
             ErrorCode.BAD_CREDENTIAL.throwException();
 
+        String token = tokenService.generateToken();
+        userModel.setToken(token);
+        userRepository.save(userModel);
         return userDataConverter.fromModelToEntity(userModel);
     }
 }

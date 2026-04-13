@@ -1,5 +1,12 @@
 package fr.epita.backend.domain.service;
 
-public class TokenService {
+import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
+@Service
+public class TokenService {
+    public String generateToken() {
+        return UUID.randomUUID().toString();
+    }
 }
