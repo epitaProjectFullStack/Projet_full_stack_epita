@@ -1,6 +1,7 @@
 package fr.epita.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.epita.backend.data.repository.UserRepository;
 import fr.epita.backend.controller.api.request.UserRequest;
 import fr.epita.backend.controller.rest.AdminUserController;
 import fr.epita.backend.converter.ControllerConverter.UserControllerConverter;
@@ -9,6 +10,7 @@ import fr.epita.backend.domain.service.UserService;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -22,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AdminUserController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class AdminUserControllerTest {
 
     @Autowired
@@ -35,6 +38,9 @@ class AdminUserControllerTest {
 
     @MockBean
     private UserControllerConverter converter;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Test
     void createUser_should_return_200() throws Exception {

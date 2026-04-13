@@ -1,6 +1,7 @@
 package fr.epita.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.epita.backend.data.repository.UserRepository;
 import fr.epita.backend.controller.api.request.GameRequest;
 import fr.epita.backend.controller.api.request.GameRevertRequest;
 import fr.epita.backend.controller.api.response.GameResponses.GameResponse;
@@ -13,6 +14,7 @@ import fr.epita.backend.utils.ErrorCode;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(GameController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class GameControllerTest {
 
     @Autowired
@@ -39,6 +42,9 @@ class GameControllerTest {
 
     @MockBean
     private GameControllerConverter converter;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Test
     void createGame_should_return_200() throws Exception {
