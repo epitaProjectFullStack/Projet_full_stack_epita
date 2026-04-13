@@ -1,0 +1,67 @@
+<div class="container">
+    <h3>Register</h3>
+    <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+        <label for="username" class="form-label">Username</label>
+        <input
+        type="text"
+        class="form-control"
+        id="validationCustom01"
+        placeholder="Username"
+        name="username"
+        formControlName="username"
+        [class.is-invalid]="registerForm.controls['username'].invalid && registerForm.controls['username'].touched"
+        required
+        />
+        @if (registerForm.controls['username'].invalid) {
+            <div class="invalid-feedback">
+                Please Enter Username
+            </div>
+        }
+
+        <label for="email" class="form-label">Email</label>
+        <input
+        type="email"
+        class="form-control"
+        id="validationCustom01"
+        placeholder="Email"
+        name="email"
+        formControlName="email"
+        [class.is-invalid]="registerForm.controls['email'].invalid && registerForm.controls['email'].touched"
+        required
+        />
+        @if (registerForm.controls['email'].invalid) {
+            <div class="invalid-feedback">
+                Please Enter valid Email
+            </div>
+        }
+
+        <label for="password" class="form-label">Password</label>
+        <input
+        type="password"
+        class="form-control"
+        id="validationCustom02"
+        placeholder="Password"
+        name="password"
+        formControlName="password"
+        [class.is-invalid]="registerForm.controls['password'].invalid && registerForm.controls['password'].touched"
+        required
+        />
+        @if (registerForm.controls['password'].errors !== null) {
+            <div class="invalid-feedback">
+                Invalid Password<br/>
+                Size must be more or egal to 8<br/>
+                Must a contain at least one Uppercase, one Lowercase, one number and one special
+            </div>
+        }
+
+        <input type="submit" class="btn btn-primary" value="Register"/>
+    </form>
+
+    @if (registerFinish()) {
+        <div class="alert alert-success fade show" role="alert">
+            Register Succeful ! You can now login.
+        </div>
+    }
+    
+</div>
+

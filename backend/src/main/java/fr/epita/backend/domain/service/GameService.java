@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 @Transactional(readOnly = true)
 public class GameService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GameService.class);
+  //private static final Logger LOGGER = LoggerFactory.getLogger(GameService.class);
 
   private final GameRepository gameRepository;
   private final GameArticleVersionRepository gameArticleVersionRepository;

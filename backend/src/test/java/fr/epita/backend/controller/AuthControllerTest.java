@@ -5,6 +5,7 @@ import fr.epita.backend.controller.rest.AuthController;
 import fr.epita.backend.converter.ControllerConverter.AuthControllerConverter;
 import fr.epita.backend.domain.entity.UserEntity;
 import fr.epita.backend.domain.service.AuthService;
+import fr.epita.backend.utils.ErrorCode;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +14,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// WHY: @WebMvcTest ne charge que la couche HTTP — pas de BDD ni Kafka nécessaire
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
 
@@ -27,7 +28,8 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // WHY: les dépendances du controller doivent être mockées
+    // WHY:
+    // On mock les dépendances → on teste uniquement le controller
     @MockBean
     private AuthService authService;
 
@@ -36,9 +38,20 @@ class AuthControllerTest {
 
     @Test
     void auth_should_return_200() throws Exception {
-        // WHY: on simule un login valide
-        when(authService.auth("admin", "admin")).thenReturn(new UserEntity());
-        when(authConverter.FromEntityToAuthResponse(any())).thenReturn(null);
+
+        // ============================================================
+        // THIS TEST PROVES THAT:
+        // A valid authentication request returns HTTP 200
+        // ============================================================
+
+        // WHY:
+        // Cas nominal → login/password corrects
+
+        when(authService.auth("admin", "admin"))
+                .thenReturn(new UserEntity());
+
+        when(authConverter.FromEntityToAuthResponse(any()))
+                .thenReturn(null);
 
         String json = """
         {
@@ -47,9 +60,131 @@ class AuthControllerTest {
         }
         """;
 
+        // HOW:
+        // - Envoi d’un POST avec JSON valide
+        // - Le service mock retourne un utilisateur
+        // - Le controller renvoie 200 OK
+
         mockMvc.perform(post("/api/auth")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void auth_should_return_400_if_request_invalid() throws Exception {
+
+        // ============================================================
+        // THIS TEST PROVES THAT:
+        // Missing required fields returns HTTP 400
+        // ============================================================
+
+        // WHY:
+        // Le controller valide que login/password ne sont pas null
+
+        String json = """
+        {
+          "password": "admin"
+        }
+        """;
+
+        // HOW:
+        // - On envoie un JSON incomplet (login manquant)
+        // - Le controller déclenche INVALID_REQUEST
+        // - Spring transforme en HTTP 400
+
+        mockMvc.perform(post("/api/auth")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
+
+        // On vérifie que le service n’est JAMAIS appelé
+        verifyNoInteractions(authService);
+    }
+
+    @Test
+    void auth_should_return_400_if_request_null() throws Exception {
+
+        // ============================================================
+        // THIS TEST PROVES THAT:
+        // Sending null body returns HTTP 400
+        // ============================================================
+
+        // WHY:
+        // Protection contre body null
+
+        // HOW:
+        // - On envoie "null"
+        // - Spring + controller déclenchent une erreur
+        // - HTTP 400 attendu
+
+        mockMvc.perform(post("/api/auth")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("null"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(authService);
+    }
+
+    @Test
+    void auth_should_return_401_if_wrong_credentials() throws Exception {
+
+        // ============================================================
+        // THIS TEST PROVES THAT:
+        // Wrong credentials return HTTP 401
+        // ============================================================
+
+        // WHY:
+        // Sécurité → login/password incorrect
+
+        when(authService.auth("admin", "wrong"))
+                .thenThrow(ErrorCode.BAD_CREDENTIAL.toException());
+
+        String json = """
+        {
+          "login": "admin",
+          "password": "wrong"
+        }
+        """;
+
+        // HOW:
+        // - Le service mock lance BAD_CREDENTIAL
+        // - Spring convertit en 401
+
+        mockMvc.perform(post("/api/auth")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void auth_should_return_403_if_user_banned() throws Exception {
+
+        // ============================================================
+        // THIS TEST PROVES THAT:
+        // Banned user returns HTTP 403
+        // ============================================================
+
+        // WHY:
+        // Règle métier → utilisateur banni
+
+        when(authService.auth("admin", "admin"))
+                .thenThrow(ErrorCode.BANNED_USER.toException());
+
+        String json = """
+        {
+          "login": "admin",
+          "password": "admin"
+        }
+        """;
+
+        // HOW:
+        // - Le service lance BANNED_USER
+        // - Spring transforme en 403
+
+        mockMvc.perform(post("/api/auth")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isForbidden());
     }
 }
