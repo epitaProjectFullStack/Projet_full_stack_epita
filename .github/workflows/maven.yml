@@ -28,4 +28,4 @@ jobs:
 
       - name: Build with Maven
         working-directory: ./backend
-        run: mvn clean verify
+        run: ./mvnw clean verify

@@ -24,8 +24,8 @@ class GameServiceTest {
     private final GameDataConverter converter = mock(GameDataConverter.class);
     private final KafkaProducerService kafka = mock(KafkaProducerService.class);
 
-    private final GameService service =
-            new GameService(gameRepository, versionRepository, userRepository, converter, kafka);
+    private final GameService service = new GameService(gameRepository, versionRepository, userRepository, converter,
+            kafka);
 
     @Test
     void createGame_should_work() {
@@ -43,7 +43,6 @@ class GameServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(gameRepository.findBySubjectGameName("Zelda")).thenReturn(Optional.empty());
 
-        // 🔥 CORRECTION ICI
         when(gameRepository.save(any())).thenAnswer(invocation -> {
             GameModel m = invocation.getArgument(0);
             m.setUuid(UUID.randomUUID()); // simule JPA
