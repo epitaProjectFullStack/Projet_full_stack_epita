@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 /**
  * WHY:
@@ -18,11 +19,18 @@ import org.springframework.stereotype.Service;
 public class KafkaConsumerService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConsumerService.class);
+  private final SimpMessagingTemplate messagingTemplate;
+
+  public KafkaConsumerService(SimpMessagingTemplate messagingTemplate) {
+    this.messagingTemplate = messagingTemplate;
+  }
 
   @KafkaListener(topics = KafkaTopics.GAME_EVENTS)
   public void listen(GameEventMessage message) {
 
-    // WHY: preuve que Kafka fonctionne
+    // WHY: journalisation
     LOGGER.info("EVENT RECEIVED: {}", message);
+
+    messagingTemplate.convertAndSend("/topic/games", message);
   }
 }
