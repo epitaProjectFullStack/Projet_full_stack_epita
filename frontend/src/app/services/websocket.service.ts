@@ -1,7 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { environment } from '../../environments/environment';
 
+/**
+ *1. User crée un jeu
+  2. Backend reçoit POST
+  3. Backend envoie event Kafka
+  4. Kafka transmet au consumer
+  5. Consumer envoie via WebSocket
+  6. Front reçoit en temps réel
+ */
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
 
@@ -9,7 +18,7 @@ export class WebSocketService {
 
   connect(callback: (event: any) => void) {
     this.client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(`${environment.apiUrl.replace('/api/', '')}/ws`),
       debug: str => console.log(str),
       reconnectDelay: 5000,
     });

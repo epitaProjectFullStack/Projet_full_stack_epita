@@ -22,9 +22,16 @@
 - mvn clean test
 - mvn clean install
 
-## RESTART PROPRE
+## RESTART PROPRE DOCKER
 - docker-compose down -v
 - docker-compose up --build
+=> backend → 80
+
+## RESTART LOCAL
+- mvn spring-boot:run
+- npm start
+=> backend → 8080
+=> frontend → 4200
 
 ## KAFKA UI
 - http://localhost:8080/ui/clusters/local
