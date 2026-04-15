@@ -4,6 +4,7 @@ import {Observable, shareReplay} from 'rxjs';
 
 import {environment} from '../../environments/environment';
 import {Game} from '../interface/game';
+import { AdminUser } from '../interface/admin-user';
 
 
 @Injectable({
@@ -16,7 +17,46 @@ export class BackendService {
   private token: string|null = null;
 
   public gamesList = signal<Game[]>([]);
+  public adminUsersList = signal<any[]>([]);
+  isAdmin = signal<boolean>(false);
 
+  getAdminUsers() {
+    const request = this.http.get<{list: any[]}>(this.backendUrl + 'admin/user');
+
+    request.subscribe({
+      next: response => {
+        console.log(response.list);
+        this.adminUsersList.set(response.list);
+      }
+    });
+  }
+  deleteGame(id: string) {
+    const request = this.http.delete(this.backendUrl + 'games/' + id);
+
+    request.subscribe({
+      next: () => {
+        this.gamesList.set(
+          this.gamesList().filter(g => g.uuid !== id)
+        );
+        this.isAdmin.set(true);
+      },
+      error: () => {
+        this.isAdmin.set(false);
+      }
+    });
+  }
+
+  deleteUser(id: string) {
+  const request = this.http.delete(this.backendUrl + 'admin/user/' + id);
+
+  request.subscribe({
+    next: () => {
+      this.adminUsersList.set(
+        this.adminUsersList().filter((u: AdminUser) => u.id !== id)
+      );
+    }
+  });
+}
 
   private createPost<T>(
       url: string, body: any, headers?: {[id: string]: string}) {

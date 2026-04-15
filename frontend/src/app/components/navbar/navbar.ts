@@ -1,7 +1,8 @@
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {RouterLink} from '@angular/router';
 
 import {routesDict} from '../../app.routes';
+import { BackendService } from '../../services/backend-service';
 
 @Component({
   selector: 'app-navbar',
@@ -11,4 +12,10 @@ import {routesDict} from '../../app.routes';
 })
 export class Navbar {
   protected routes = routesDict
+
+  private backend = inject(BackendService);
+
+  ngOnInit() {
+    this.backend.getAdminUsers();
+  }
 }

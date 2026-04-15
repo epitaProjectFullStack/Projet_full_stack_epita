@@ -3,9 +3,19 @@
         <a class="navbar-brand d-flex align-items-center" routerLink="/"><span>WikiGames</span></a>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    @for (item of routes; track $index) {
-                        <li class="nav-item"><a class="nav-link" routerLink="{{item.route.path}}">{{item.name}}</a></li>
+                  @for (item of routes; track $index) {
+
+                    @if (item.name !== 'Admin' || backend.isAdmin()) {
+
+                      <li class="nav-item">
+                        <a class="nav-link" [routerLink]="item.route.path">
+                          {{ item.name }}
+                        </a>
+                      </li>
+
                     }
+
+                  }
                 </ul>
             </div>
         </div>
