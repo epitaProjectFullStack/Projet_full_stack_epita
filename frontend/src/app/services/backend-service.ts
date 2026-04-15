@@ -1,5 +1,6 @@
 import {HttpClient} from '@angular/common/http';
 import {inject, Injectable, signal} from '@angular/core';
+import {jwtDecode} from 'jwt-decode'
 import {shareReplay} from 'rxjs';
 
 import {environment} from '../../environments/environment';
@@ -14,7 +15,7 @@ export class BackendService {
   private http = inject(HttpClient);
 
   private backendUrl = environment.apiUrl;
-  private token: string|null = null;
+  private token: any|null = null;
 
   public gamesList = signal<Game[]>([]);
   public adminUsersList = signal<any[]>([]);
@@ -98,8 +99,7 @@ export class BackendService {
     const replay = request.pipe(shareReplay(1))
     replay.subscribe({
       next: (t) => {
-        this.token = t.token;
-        console.log(`Set JWT to ${this.token}`);
+        this.token = jwtDecode(t.token);
       }
     });
 
