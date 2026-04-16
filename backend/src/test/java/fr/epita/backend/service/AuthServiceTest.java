@@ -5,6 +5,8 @@ import fr.epita.backend.data.model.UserModel;
 import fr.epita.backend.data.repository.UserRepository;
 import fr.epita.backend.domain.service.AuthService;
 import fr.epita.backend.domain.service.TokenService;
+import fr.epita.backend.domain.service.UserService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -19,8 +21,10 @@ class AuthServiceTest {
     private final UserDataConverter converter = mock(UserDataConverter.class);
     private final PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
     private final TokenService tokenService = mock(TokenService.class);
+    private final UserService userService = mock(UserService.class);
 
-    private final AuthService authService = new AuthService(userRepository, converter, passwordEncoder, tokenService);
+    private final AuthService authService = new AuthService(userRepository, converter, passwordEncoder, tokenService,
+            userService);
 
     @Test
     void auth_should_work() {

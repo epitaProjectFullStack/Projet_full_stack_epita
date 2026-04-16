@@ -36,9 +36,6 @@ class CreateUser {
                 request.setLogin(login);
                 request.setPassword("secret");
                 request.setMail(mail);
-                request.setRole(Role.USER);
-                request.setToken("dummy-token");
-                request.setBanned(false);
                 return request;
         }
 
