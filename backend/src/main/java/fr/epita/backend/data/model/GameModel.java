@@ -1,8 +1,11 @@
 package fr.epita.backend.data.model;
 
+import fr.epita.backend.utils.GameStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -31,6 +34,10 @@ public class GameModel {
 
     @Column(name = "subject_game_name", nullable = false, unique = true)
     private String subjectGameName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private GameStatus status;
 
     @OneToOne(fetch = FetchType.LAZY)
     private GameArticleVersionModel currentVersion;

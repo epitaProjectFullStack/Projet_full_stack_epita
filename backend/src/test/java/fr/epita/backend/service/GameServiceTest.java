@@ -9,6 +9,7 @@ import fr.epita.backend.data.model.GameModel;
 import fr.epita.backend.data.model.GameArticleVersionModel;
 import fr.epita.backend.data.model.UserModel;
 import fr.epita.backend.domain.service.KafkaProducerService;
+import fr.epita.backend.utils.GameStatus;
 
 import org.junit.jupiter.api.Test;
 
@@ -72,6 +73,7 @@ class GameServiceTest {
         verify(gameRepository, atLeastOnce()).save(any());
         verify(versionRepository).save(any());
         verify(kafka).sendGameCreated(any());
+        verify(gameRepository, atLeastOnce()).save(argThat(model -> model.getStatus() == GameStatus.TO_REVIEW));
     }
 
     @Test
@@ -190,12 +192,66 @@ class GameServiceTest {
         // Retrieving all games returns a list
         // ============================================================
 
-        when(gameRepository.findAll()).thenReturn(List.of(new GameModel()));
+        when(gameRepository.findAllByStatus(GameStatus.OK)).thenReturn(List.of(new GameModel()));
         when(converter.fromModelToEntity(any())).thenReturn(new GameEntity());
 
         List<GameEntity> result = service.getGames();
 
         assertThat(result).isNotEmpty();
+    }
+
+    @Test
+    void getGamesToReview_should_return_list() {
+        when(gameRepository.findAllByStatus(GameStatus.TO_REVIEW)).thenReturn(List.of(new GameModel()));
+        when(converter.fromModelToEntity(any())).thenReturn(new GameEntity());
+
+        List<GameEntity> result = service.getGamesToReview();
+
+        assertThat(result).isNotEmpty();
+    }
+
+    @Test
+    void getAllGames_should_return_list() {
+        when(gameRepository.findAll()).thenReturn(List.of(new GameModel()));
+        when(converter.fromModelToEntity(any())).thenReturn(new GameEntity());
+
+        List<GameEntity> result = service.getAllGames();
+
+        assertThat(result).isNotEmpty();
+    }
+
+    @Test
+    void moderateGame_should_update_status() {
+        UUID gameId = UUID.randomUUID();
+        GameModel gameModel = new GameModel();
+        gameModel.setStatus(GameStatus.TO_REVIEW);
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.of(gameModel));
+        when(converter.fromModelToEntity(gameModel)).thenReturn(new GameEntity());
+
+        GameEntity result = service.moderateGame(gameId, GameStatus.OK);
+
+        assertThat(result).isNotNull();
+        assertThat(gameModel.getStatus()).isEqualTo(GameStatus.OK);
+        verify(gameRepository).save(gameModel);
+    }
+
+    @Test
+    void moderateGame_should_fail_if_status_invalid() {
+        UUID gameId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> service.moderateGame(gameId, GameStatus.TO_REVIEW))
+                .isInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    void moderateGame_should_fail_if_game_not_found() {
+        UUID gameId = UUID.randomUUID();
+
+        when(gameRepository.findById(gameId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.moderateGame(gameId, GameStatus.OK))
+                .isInstanceOf(RuntimeException.class);
     }
 
     @Test
@@ -296,6 +352,7 @@ class GameServiceTest {
 
         verify(versionRepository).save(any());
         verify(gameRepository, atLeastOnce()).save(any());
+        assertThat(gameModel.getStatus()).isEqualTo(GameStatus.TO_REVIEW);
     }
 
     @Test
@@ -379,6 +436,7 @@ class GameServiceTest {
 
         verify(versionRepository).save(any());
         verify(gameRepository, atLeastOnce()).save(any());
+        assertThat(gameModel.getStatus()).isEqualTo(GameStatus.TO_REVIEW);
     }
 
     @Test

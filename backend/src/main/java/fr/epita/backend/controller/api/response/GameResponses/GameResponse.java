@@ -1,5 +1,6 @@
 package fr.epita.backend.controller.api.response.GameResponses;
 
+import fr.epita.backend.utils.GameStatus;
 import lombok.Data;
 
 import java.time.Instant;
@@ -15,4 +16,5 @@ public class GameResponse {
     private String articleContent;
     private Integer version;
     private Instant createdAt;
+    private GameStatus status;
 }

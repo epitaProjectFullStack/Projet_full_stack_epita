@@ -2,6 +2,7 @@ package fr.epita.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.epita.backend.data.repository.UserRepository;
+import fr.epita.backend.controller.api.request.GameModerationRequest;
 import fr.epita.backend.controller.api.request.GameRequest;
 import fr.epita.backend.controller.api.request.GameRevertRequest;
 import fr.epita.backend.controller.api.response.GameResponses.GameResponse;
@@ -11,6 +12,7 @@ import fr.epita.backend.converter.ControllerConverter.GameControllerConverter;
 import fr.epita.backend.domain.entity.GameEntity;
 import fr.epita.backend.domain.service.GameService;
 import fr.epita.backend.utils.ErrorCode;
+import fr.epita.backend.utils.GameStatus;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,6 +138,57 @@ class GameControllerTest {
                 .andExpect(status().isOk());
 
         verify(gameService).getGames();
+    }
+
+    @Test
+    void getGamesToReview_should_return_200() throws Exception {
+        when(gameService.getGamesToReview()).thenReturn(List.of(new GameEntity()));
+        when(converter.fromEntitiesToResponses(any())).thenReturn(new GamesResponse());
+
+        mockMvc.perform(get("/api/games/review"))
+                .andExpect(status().isOk());
+
+        verify(gameService).getGamesToReview();
+    }
+
+    @Test
+    void getAllGames_should_return_200() throws Exception {
+        when(gameService.getAllGames()).thenReturn(List.of(new GameEntity()));
+        when(converter.fromEntitiesToResponses(any())).thenReturn(new GamesResponse());
+
+        mockMvc.perform(get("/api/games/all"))
+                .andExpect(status().isOk());
+
+        verify(gameService).getAllGames();
+    }
+
+    @Test
+    void moderateGame_should_return_200() throws Exception {
+        UUID id = UUID.randomUUID();
+        GameModerationRequest request = new GameModerationRequest();
+        request.setStatus(GameStatus.OK);
+
+        when(gameService.moderateGame(id, GameStatus.OK)).thenReturn(new GameEntity());
+        when(converter.fromEntityToResponse(any())).thenReturn(new GameResponse());
+
+        mockMvc.perform(patch("/api/games/" + id + "/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        verify(gameService).moderateGame(id, GameStatus.OK);
+    }
+
+    @Test
+    void moderateGame_should_return_400_if_invalid() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/games/" + id + "/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(gameService);
     }
 
     @Test

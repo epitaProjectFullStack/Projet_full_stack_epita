@@ -1,5 +1,6 @@
 package fr.epita.backend.controller.rest;
 
+import fr.epita.backend.controller.api.request.GameModerationRequest;
 import fr.epita.backend.controller.api.request.GameRequest;
 import fr.epita.backend.controller.api.request.GameRevertRequest;
 import fr.epita.backend.controller.api.response.GameResponses.GameResponse;
@@ -13,6 +14,7 @@ import fr.epita.backend.utils.ErrorCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -39,6 +41,27 @@ public class GameController {
     public ResponseEntity<GamesResponse> getGames() {
         List<GameEntity> games = gameService.getGames();
         return ResponseEntity.ok(gameControllerConverter.fromEntitiesToResponses(games));
+    }
+
+    @GetMapping("/review")
+    public ResponseEntity<GamesResponse> getGamesToReview() {
+        List<GameEntity> games = gameService.getGamesToReview();
+        return ResponseEntity.ok(gameControllerConverter.fromEntitiesToResponses(games));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<GamesResponse> getAllGames() {
+        List<GameEntity> games = gameService.getAllGames();
+        return ResponseEntity.ok(gameControllerConverter.fromEntitiesToResponses(games));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<GameResponse> moderateGame(@PathVariable UUID id, @RequestBody GameModerationRequest request) {
+        if (request == null || request.getStatus() == null)
+            ErrorCode.INVALID_REQUEST.throwException();
+
+        GameEntity moderatedGame = gameService.moderateGame(id, request.getStatus());
+        return ResponseEntity.ok(gameControllerConverter.fromEntityToResponse(moderatedGame));
     }
 
     @GetMapping("/{id}")

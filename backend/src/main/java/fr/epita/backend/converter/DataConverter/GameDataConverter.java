@@ -15,6 +15,7 @@ public class GameDataConverter {
         GameEntity entity = new GameEntity();
         entity.setUuid(model.getUuid());
         entity.setSubjectGameName(model.getSubjectGameName());
+        entity.setStatus(model.getStatus());
 
         if (currentVersion != null) {
             entity.setAuthorId(currentVersion.getAuthor().getUuid());

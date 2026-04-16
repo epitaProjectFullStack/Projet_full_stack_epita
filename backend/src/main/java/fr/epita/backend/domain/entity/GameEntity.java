@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import fr.epita.backend.utils.GameStatus;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -19,4 +20,5 @@ public class GameEntity {
     private String articleContent;
     private Integer version;
     private Instant createdAt;
+    private GameStatus status;
 }
