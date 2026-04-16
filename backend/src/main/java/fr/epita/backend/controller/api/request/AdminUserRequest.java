@@ -6,7 +6,8 @@ import lombok.Data;
 @Data
 public class AdminUserRequest {
     private String login;
+    private String password;
+    private String mail;
     private Role role;
-    private String token;
     private boolean banned;
 }

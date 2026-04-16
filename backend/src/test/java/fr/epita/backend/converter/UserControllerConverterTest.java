@@ -1,6 +1,7 @@
 package fr.epita.backend.converter;
 
 import fr.epita.backend.converter.ControllerConverter.UserControllerConverter;
+import fr.epita.backend.controller.api.request.AdminUserRequest;
 import fr.epita.backend.domain.entity.UserEntity;
 import fr.epita.backend.controller.api.request.UserRequest;
 
@@ -71,5 +72,17 @@ class UserControllerConverterTest {
 
         assertThat(converter.fromRequestToEntity(request).getLogin())
                 .isEqualTo("alice");
+    }
+
+    @Test
+    void fromAdminRequestToEntity_should_map_admin_fields() {
+        AdminUserRequest request = new AdminUserRequest();
+        request.setLogin("alice");
+        request.setBanned(true);
+
+        UserEntity entity = converter.fromAdminRequestToEntity(request);
+
+        assertThat(entity.getLogin()).isEqualTo("alice");
+        assertThat(entity.isBanned()).isTrue();
     }
 }

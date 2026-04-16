@@ -4,6 +4,7 @@ import fr.epita.backend.data.model.UserModel;
 import fr.epita.backend.data.repository.UserRepository;
 import fr.epita.backend.domain.entity.UserEntity;
 import fr.epita.backend.utils.ErrorCode;
+import fr.epita.backend.utils.Role;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,27 @@ public class UserService {
     public UserEntity createUser(UserEntity entity) {
         if (entity.getLogin() == null || entity.getMail() == null || entity.getPassword() == null)
             ErrorCode.INVALID_REQUEST.throwException();
+        if (entity.getRole() == null)
+            entity.setRole(Role.USER);
+        UserModel userModel = userDataConverter.fromEntityToModel(entity);
+        userModel.setPassword(passwordEncoder.encode(entity.getPassword()));
+        if (userRepository.findByLogin(entity.getLogin()).isPresent())
+            ErrorCode.LOGIN_ALREADY_EXISTS.throwException();
+        if (userRepository.findByMail(entity.getMail()).isPresent())
+            ErrorCode.MAIL_ALREADY_EXISTS.throwException();
+
+        try {
+            userRepository.save(userModel);
+        } catch (DataIntegrityViolationException e) {
+            ErrorCode.USER_ALREADY_EXISTS.throwException();
+        }
+        return userDataConverter.fromModelToEntity(userModel);
+    }
+
+    public UserEntity createUserAsAdmin(UserEntity entity) {
+        if (entity.getLogin() == null || entity.getMail() == null || entity.getPassword() == null || entity.getRole() == null)
+            ErrorCode.INVALID_REQUEST.throwException();
+
         UserModel userModel = userDataConverter.fromEntityToModel(entity);
         userModel.setPassword(passwordEncoder.encode(entity.getPassword()));
         if (userRepository.findByLogin(entity.getLogin()).isPresent())
@@ -68,8 +90,27 @@ public class UserService {
         if (entity.getLogin() == null || entity.getMail() == null || entity.getPassword() == null)
             ErrorCode.INVALID_REQUEST.throwException();
         UserModel userModel = userRepository.findById(id).orElseThrow(ErrorCode.UNREGISTERED::toException);
-        userDataConverter.transfertDataFromEntityToModel(userModel, entity);
+        userModel.setLogin(entity.getLogin());
+        userModel.setMail(entity.getMail());
         userModel.setPassword(passwordEncoder.encode(entity.getPassword()));
+
+        userRepository.save(userModel);
+        return userDataConverter.fromModelToEntity(userModel);
+    }
+
+    public UserEntity updateUserAsAdmin(UUID id, UserEntity entity) {
+        if (entity.getLogin() == null || entity.getMail() == null || entity.getRole() == null)
+            ErrorCode.INVALID_REQUEST.throwException();
+
+        UserModel userModel = userRepository.findById(id).orElseThrow(ErrorCode.UNREGISTERED::toException);
+        userModel.setLogin(entity.getLogin());
+        userModel.setMail(entity.getMail());
+        userModel.setRole(entity.getRole());
+        userModel.setBanned(entity.isBanned());
+
+        if (entity.getPassword() != null && !entity.getPassword().isBlank()) {
+            userModel.setPassword(passwordEncoder.encode(entity.getPassword()));
+        }
 
         userRepository.save(userModel);
         return userDataConverter.fromModelToEntity(userModel);

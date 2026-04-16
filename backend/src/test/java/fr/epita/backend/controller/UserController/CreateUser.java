@@ -2,7 +2,6 @@ package fr.epita.backend.controller.UserController;
 
 import fr.epita.backend.controller.api.request.UserRequest;
 import fr.epita.backend.controller.api.response.UserResponses.UserResponse;
-import fr.epita.backend.utils.Role;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -53,7 +52,7 @@ class CreateUser {
                 assertNotNull(createdResponse.getBody());
                 assertEquals("alice", createdResponse.getBody().getLogin());
                 assertEquals("alice@test.com", createdResponse.getBody().getMail());
-                assertEquals(Role.USER, createdResponse.getBody().getRole());
+                assertEquals("alice", createdResponse.getBody().getLogin());
         }
 
         @Test

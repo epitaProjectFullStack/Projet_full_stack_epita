@@ -3,7 +3,6 @@ package fr.epita.backend.controller.UserController;
 import fr.epita.backend.controller.api.request.UserRequest;
 import fr.epita.backend.controller.api.response.UserResponses.UserResponse;
 import fr.epita.backend.controller.api.response.UserResponses.UsersResponse;
-import fr.epita.backend.utils.Role;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
