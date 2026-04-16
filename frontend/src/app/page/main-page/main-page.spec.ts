@@ -6,6 +6,7 @@ import {Game} from '../../interface/game';
 import {BackendService} from '../../services/backend-service';
 
 import {MainPage} from './main-page';
+import { WebSocketService } from '../../services/websocket.service';
 
 describe('MainPage', () => {
   let component: MainPage;
@@ -25,13 +26,19 @@ describe('MainPage', () => {
     }
   }
 
+  class WebSocketServiceStub {
+    connect() {
+      // do nothing
+    }
+  }
   beforeEach(async () => {
     await TestBed
         .configureTestingModule({
           imports: [MainPage],
           providers: [
             provideRouter([]),
-            {provide: BackendService, useClass: BackendServiceStub}
+            {provide: BackendService, useClass: BackendServiceStub},
+            { provide: WebSocketService, useClass: WebSocketServiceStub }
           ]
         })
         .compileComponents();

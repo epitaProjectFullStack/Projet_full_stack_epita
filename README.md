@@ -2,6 +2,7 @@
 
 ## POUR TESTER LE BUILD AVANT DE POUSSER
 - ./mvnw clean verify
+- npm run coverage
 
 ## BUILD FRONTEND (AVANT PUSH)
 - npm run build

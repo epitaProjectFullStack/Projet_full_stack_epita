@@ -1,8 +1,9 @@
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 
 import {ErrorPopup} from './components/error-popup/error-popup';
 import {Navbar} from './components/navbar/navbar';
+import { BackendService } from './services/backend-service';
 
 @Component({
   selector: 'app-root',
@@ -12,4 +13,9 @@ import {Navbar} from './components/navbar/navbar';
 })
 
 export class App {
+  private backend = inject(BackendService);
+
+  ngOnInit() {
+    this.backend.checkAdmin();
+  }
 }

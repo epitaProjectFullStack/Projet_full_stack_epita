@@ -5,7 +5,12 @@ import { environment } from '../../environments/environment';
 export class WebSocketService {
 
   connect(callback: (event: any) => void) {
-    const socket = new WebSocket(`${environment.apiUrl.replace('/api/', '')}ws`);
+    if (typeof window === 'undefined') return; // Not in a browser environment
+
+    const baseUrl = environment.apiUrl.replace('/api/', '');
+    const wsUrl = baseUrl.replace('http://', 'ws://').replace('https://', 'wss://') + 'ws';
+
+    const socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
       console.log('WebSocket connected');

@@ -14,8 +14,4 @@ export class Navbar {
   protected routes = routesDict
 
   public backend = inject(BackendService);
-
-  ngOnInit() {
-    this.backend.getAdminUsers();
-  }
 }

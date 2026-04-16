@@ -20,6 +20,15 @@ export class BackendService {
   public adminUsersList = signal<any[]>([]);
   isAdmin = signal<boolean>(false);
 
+  checkAdmin() {
+    this.http.get<{list: AdminUser[]}>(this.backendUrl + 'admin/user')
+      .subscribe({
+        next: (response) => {
+          this.adminUsersList.set(response.list);
+        }
+      });
+  }
+
   getAdminUsers() {
     const request = this.http.get<{list: any[]}>(this.backendUrl + 'admin/user');
 
@@ -38,25 +47,21 @@ export class BackendService {
         this.gamesList.set(
           this.gamesList().filter(g => g.uuid !== id)
         );
-        this.isAdmin.set(true);
-      },
-      error: () => {
-        this.isAdmin.set(false);
       }
     });
   }
 
   deleteUser(id: any) {
-  const request = this.http.delete(this.backendUrl + 'admin/user/' + id);
+    const request = this.http.delete(this.backendUrl + 'admin/user/' + id);
 
-  request.subscribe({
-    next: () => {
-      this.adminUsersList.set(
-        this.adminUsersList().filter((u: AdminUser) => u.id !== id)
-      );
-    }
-  });
-}
+    request.subscribe({
+      next: () => {
+        this.adminUsersList.set(
+          this.adminUsersList().filter((u: AdminUser) => u.id !== id)
+        );
+      }
+    });
+  }
 
   private createPost<T>(
       url: string, body: any, headers?: {[id: string]: string}) {
