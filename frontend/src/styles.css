@@ -1,1 +1,7 @@
-@import "tailwindcss";
+/* primeicons (import from node_modules to avoid angular builder subpath issues) */
+@import "../node_modules/primeicons/primeicons.css";
+
+/* Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

@@ -13,7 +13,7 @@ import { BackendService } from '../../services/backend-service';
 export class Navbar {
   protected routes = routesDict
 
-  private backend = inject(BackendService);
+  public backend = inject(BackendService);
 
   ngOnInit() {
     this.backend.getAdminUsers();

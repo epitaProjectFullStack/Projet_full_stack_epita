@@ -1,12 +1,10 @@
 # Projet_full_stack_epita
 
-## pour lancer le projet l'une des 2 commandes
-
-- docker-compose up
-- mvn spring-boot:run
-
 ## POUR TESTER LE BUILD AVANT DE POUSSER
 - ./mvnw clean verify
+
+## BUILD FRONTEND (AVANT PUSH)
+- npm run build
 
 ## visualiser l'api grace a swagger
 
@@ -26,6 +24,7 @@
 - docker-compose down -v
 - docker-compose up --build
 => backend → 80
+=> ng serve --configuration production
 
 ## RESTART LOCAL
 - mvn spring-boot:run

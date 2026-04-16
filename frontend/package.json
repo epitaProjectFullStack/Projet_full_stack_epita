@@ -33,14 +33,14 @@
     "@angular/router": "^21.1.0",
     "@primeng/themes": "^21.0.4",
     "@primeuix/themes": "^2.0.3",
-    "@stomp/stompjs": "^7.3.0",
-    "@tailwindcss/postcss": "^4.2.2",
     "@vitest/coverage-v8": "^4.1.2",
+    "autoprefixer": "^10.5.0",
     "ngx-editor": "^19.0.0-beta.1",
+    "postcss": "^8.5.10",
     "primeicons": "^7.0.0",
     "primeng": "^21.1.6",
     "rxjs": "~7.8.0",
-    "sockjs-client": "^1.6.1",
+    "tailwindcss": "^3.4.19",
     "tslib": "^2.3.0",
     "uuid": "^13.0.0"
   },
@@ -52,7 +52,7 @@
     "autoprefixer": "^10.5.0",
     "jsdom": "^27.1.0",
     "postcss": "^8.5.10",
-    "tailwindcss": "^4.2.2",
+    "tailwindcss": "^3.4.19",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
   }

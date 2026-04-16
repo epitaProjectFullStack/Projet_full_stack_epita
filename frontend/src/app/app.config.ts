@@ -6,13 +6,11 @@ import {routes} from './app.routes';
 import {authInterceptor} from './interceptor/auth-interceptor';
 import {errorInterceptor} from './interceptor/error-interceptor';
 import {loggingInterceptor} from './interceptor/logging-interceptor';
-import { providePrimeNG } from 'primeng/config';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(), provideRouter(routes),
     provideHttpClient(withInterceptors(
         [authInterceptor, errorInterceptor, loggingInterceptor])),
-    providePrimeNG()
   ]
 };

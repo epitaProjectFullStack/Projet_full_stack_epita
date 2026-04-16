@@ -30,7 +30,7 @@ export class BackendService {
       }
     });
   }
-  deleteGame(id: string) {
+  deleteGame(id: any) {
     const request = this.http.delete(this.backendUrl + 'games/' + id);
 
     request.subscribe({
@@ -46,7 +46,7 @@ export class BackendService {
     });
   }
 
-  deleteUser(id: string) {
+  deleteUser(id: any) {
   const request = this.http.delete(this.backendUrl + 'admin/user/' + id);
 
   request.subscribe({

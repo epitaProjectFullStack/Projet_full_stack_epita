@@ -1,15 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BackendService } from '../../services/backend-service';
-
-import { TabViewModule } from 'primeng/tabview';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, TabViewModule, TableModule, ButtonModule],
+  imports: [CommonModule, TableModule, ButtonModule],
   templateUrl: './admin.html'
 })
 export class Admin implements OnInit {
@@ -24,11 +22,11 @@ export class Admin implements OnInit {
     this.backend.getAdminUsers();
   }
 
-  deleteArticle(id: string) {
+  deleteArticle(id: any) {
     this.backend.deleteGame(id);
   }
 
-  banUser(id: string) {
+  banUser(id: any) {
     this.backend.deleteUser(id);
   }
 }
