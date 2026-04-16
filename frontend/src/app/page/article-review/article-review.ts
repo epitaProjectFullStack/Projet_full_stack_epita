@@ -20,8 +20,9 @@ export class ArticleReview {
   constructor() {
     this.activatedRoute.params.subscribe((params) => {
       const id = params['id'];
-      this.game.set(
-          this.backendService.gamesList().find(game => game.uuid === id));
+      this.backendService.getReviewerGames().subscribe(response => {
+        this.game.set(response.list.find(game => game.uuid === id));
+      })
     })
   }
 

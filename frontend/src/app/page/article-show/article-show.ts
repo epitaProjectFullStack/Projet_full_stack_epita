@@ -21,8 +21,8 @@ export class ArticleShow {
   constructor() {
     this.activatedRoute.params.subscribe((params) => {
       const id = params['id'];
-      this.game.set(
-          this.backendService.gamesList().find(game => game.uuid === id));
+      this.backendService.getAllGames().subscribe(
+          response => {this.game.set(response.list.find(g => g.uuid === id))});
     })
   }
 }

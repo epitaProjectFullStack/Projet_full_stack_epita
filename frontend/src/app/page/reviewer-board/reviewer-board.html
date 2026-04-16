@@ -1,1 +1,6 @@
-<p>reviewer-board works!</p>
+@for (game of games(); track $index) {
+    <div class="container-fluid">
+        <app-game-card [game]="game"/>
+        <button class="btn btn-primary">Start Review</button>
+    </div>
+}

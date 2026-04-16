@@ -1,6 +1,6 @@
-import {signal, WritableSignal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {provideRouter} from '@angular/router';
+import {Observable, of} from 'rxjs';
 
 import {Game} from '../../interface/game';
 import {BackendService} from '../../services/backend-service';
@@ -13,16 +13,16 @@ describe('MainPage', () => {
   let fixture: ComponentFixture<MainPage>;
 
   class BackendServiceStub {
-    public gamesList: WritableSignal<Game[]> = signal([]);
-
-    getAllGames(): void {
-      this.gamesList.set([{
-        uuid: '0000-0000-0000-0000',
-        authorLogin: 'oui',
-        subjectGameName: 'LoL',
-        articleName: 'Magic',
-        articleContent: 'Magic is magic!'
-      }])
+    getAllGames(): Observable<{list: Game[]}> {
+      return of({
+        list: [{
+          uuid: '0000-0000-0000-0000',
+          authorLogin: 'oui',
+          subjectGameName: 'LoL',
+          articleName: 'Magic',
+          articleContent: 'Magic is magic!'
+        }]
+      })
     }
   }
 
