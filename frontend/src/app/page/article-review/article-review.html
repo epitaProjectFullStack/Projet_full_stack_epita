@@ -1,0 +1,9 @@
+@if (game() === undefined) {
+    <div>Loading...</div>
+} @else {
+    <app-article [game]="game()!!" />
+    <div class="d-flex justify-content-evenly floating-center w-100">
+        <button class="btn btn-primary" (click)="onApprove()">Approve</button>
+        <button class="btn" (click)="onRefuse()">Refuse</button>
+    </div>
+}

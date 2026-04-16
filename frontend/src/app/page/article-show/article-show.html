@@ -1,0 +1,5 @@
+@if (game() === undefined) {
+    <div>Loading...</div>
+} @else {
+    <app-article [game]="game()!!" />
+}
