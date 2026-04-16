@@ -4,6 +4,7 @@ import fr.epita.backend.data.model.UserModel;
 import fr.epita.backend.data.repository.UserRepository;
 import fr.epita.backend.domain.entity.UserEntity;
 import fr.epita.backend.utils.ErrorCode;
+import fr.epita.backend.utils.Role;
 import fr.epita.backend.converter.DataConverter.UserDataConverter;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,13 +17,15 @@ public class AuthService {
     private final UserDataConverter userDataConverter;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final UserService userService;
 
     public AuthService(UserRepository userRepository, UserDataConverter userDataConverter,
-            PasswordEncoder passwordEncoder, TokenService tokenService) {
+            PasswordEncoder passwordEncoder, TokenService tokenService, UserService userService) {
         this.userRepository = userRepository;
         this.userDataConverter = userDataConverter;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.userService = userService;
     }
 
     public UserEntity auth(String login, String password) {
@@ -42,5 +45,10 @@ public class AuthService {
         userModel.setToken(token);
         userRepository.save(userModel);
         return userDataConverter.fromModelToEntity(userModel);
+    }
+
+    public UserEntity register(UserEntity entity) {
+        entity.setRole(Role.USER);
+        return userService.createUser(entity);
     }
 }

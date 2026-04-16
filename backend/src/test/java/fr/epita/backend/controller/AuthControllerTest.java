@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.epita.backend.data.repository.UserRepository;
 import fr.epita.backend.controller.rest.AuthController;
 import fr.epita.backend.converter.ControllerConverter.AuthControllerConverter;
+import fr.epita.backend.converter.ControllerConverter.UserControllerConverter;
 import fr.epita.backend.domain.entity.UserEntity;
 import fr.epita.backend.domain.service.AuthService;
 import fr.epita.backend.utils.ErrorCode;
@@ -38,6 +39,9 @@ class AuthControllerTest {
 
     @MockBean
     private AuthControllerConverter authConverter;
+
+    @MockBean
+    private UserControllerConverter userControllerConverter;
 
     @MockBean
     private UserRepository userRepository;

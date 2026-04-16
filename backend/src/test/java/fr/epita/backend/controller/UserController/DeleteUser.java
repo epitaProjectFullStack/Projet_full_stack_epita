@@ -3,7 +3,6 @@ package fr.epita.backend.controller.UserController;
 import fr.epita.backend.controller.api.request.UserRequest;
 import fr.epita.backend.controller.api.response.UserResponses.UserResponse;
 import fr.epita.backend.controller.api.response.UserResponses.UsersResponse;
-import fr.epita.backend.utils.Role;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -39,9 +38,6 @@ class DeleteUser {
         request.setLogin(login);
         request.setPassword("secret");
         request.setMail(mail);
-        request.setRole(Role.USER);
-        request.setToken("dummy-token");
-        request.setBanned(false);
         return request;
     }
 
