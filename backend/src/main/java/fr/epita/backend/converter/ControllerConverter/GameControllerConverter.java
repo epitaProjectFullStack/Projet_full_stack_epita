@@ -34,6 +34,7 @@ public class GameControllerConverter {
         response.setArticleContent(entity.getArticleContent());
         response.setVersion(entity.getVersion());
         response.setCreatedAt(entity.getCreatedAt());
+        response.setStatus(entity.getStatus());
         return response;
     }
 

@@ -10,6 +10,7 @@ import fr.epita.backend.data.repository.UserRepository;
 import fr.epita.backend.domain.entity.GameArticleVersionEntity;
 import fr.epita.backend.domain.entity.GameEntity;
 import fr.epita.backend.utils.ErrorCode;
+import fr.epita.backend.utils.GameStatus;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,26 @@ public class GameService {
   public List<GameEntity> getGames() {
     List<GameEntity> entities = new ArrayList<>();
 
+    for (GameModel model : gameRepository.findAllByStatus(GameStatus.OK)) {
+      entities.add(gameDataConverter.fromModelToEntity(model));
+    }
+
+    return entities;
+  }
+
+  public List<GameEntity> getGamesToReview() {
+    List<GameEntity> entities = new ArrayList<>();
+
+    for (GameModel model : gameRepository.findAllByStatus(GameStatus.TO_REVIEW)) {
+      entities.add(gameDataConverter.fromModelToEntity(model));
+    }
+
+    return entities;
+  }
+
+  public List<GameEntity> getAllGames() {
+    List<GameEntity> entities = new ArrayList<>();
+
     for (GameModel model : gameRepository.findAll()) {
       entities.add(gameDataConverter.fromModelToEntity(model));
     }
@@ -69,6 +90,20 @@ public class GameService {
   }
 
   @Transactional
+  public GameEntity moderateGame(UUID id, GameStatus status) {
+    if (status == null || status == GameStatus.TO_REVIEW) {
+      ErrorCode.INVALID_REQUEST.throwException("status");
+    }
+
+    GameModel gameModel = gameRepository.findById(id).orElseThrow(
+        ErrorCode.GAME_NOT_FOUND::toException);
+    gameModel.setStatus(status);
+    gameRepository.save(gameModel);
+
+    return gameDataConverter.fromModelToEntity(gameModel);
+  }
+
+  @Transactional
   public GameEntity createGame(GameEntity entity) {
     validateWritableEntity(entity);
     ensureGameNameAvailable(entity.getSubjectGameName());
@@ -77,6 +112,7 @@ public class GameService {
 
     GameModel gameModel = new GameModel();
     gameModel.setSubjectGameName(entity.getSubjectGameName());
+    gameModel.setStatus(GameStatus.TO_REVIEW);
     gameRepository.save(gameModel);
 
     GameArticleVersionModel versionModel = buildVersion(gameModel, author, entity, 1);
@@ -102,6 +138,7 @@ public class GameService {
       ensureGameNameAvailable(entity.getSubjectGameName());
       gameModel.setSubjectGameName(entity.getSubjectGameName());
     }
+    gameModel.setStatus(GameStatus.TO_REVIEW);
 
     Integer nextVersion = gameModel.getCurrentVersion() == null
         ? 1
@@ -130,6 +167,7 @@ public class GameService {
     revertEntity.setSubjectGameName(gameModel.getSubjectGameName());
     revertEntity.setArticleName(sourceVersion.getArticleName());
     revertEntity.setArticleContent(sourceVersion.getArticleContent());
+    gameModel.setStatus(GameStatus.TO_REVIEW);
 
     Integer nextVersion = gameModel.getCurrentVersion() == null
         ? 1
