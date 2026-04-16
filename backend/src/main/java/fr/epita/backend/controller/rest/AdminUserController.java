@@ -1,9 +1,8 @@
 package fr.epita.backend.controller.rest;
 
-import fr.epita.backend.controller.api.request.UserRequest;
+import fr.epita.backend.controller.api.request.AdminUserRequest;
 import fr.epita.backend.controller.api.response.AdminResponses.UserResponses.AdminUserResponse;
 import fr.epita.backend.controller.api.response.AdminResponses.UserResponses.AdminUsersResponse;
-import fr.epita.backend.controller.api.response.UserResponses.UserResponse;
 
 import fr.epita.backend.converter.ControllerConverter.UserControllerConverter;
 import fr.epita.backend.domain.entity.UserEntity;
@@ -29,13 +28,13 @@ public class AdminUserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest request) {
+    public ResponseEntity<AdminUserResponse> createUser(@RequestBody AdminUserRequest request) {
         if (request == null)
             ErrorCode.INVALID_REQUEST.throwException();
-        UserEntity entity = userControllerConverter.fromRequestToEntity(request);
+        UserEntity entity = userControllerConverter.fromAdminRequestToEntity(request);
 
-        UserEntity userEntity = userService.createUser(entity);
-        UserResponse response = userControllerConverter.fromEntityToResponse(userEntity);
+        UserEntity userEntity = userService.createUserAsAdmin(entity);
+        AdminUserResponse response = userControllerConverter.fromEntityToAdminResponse(userEntity);
         return ResponseEntity.ok(response);
     }
 
@@ -54,13 +53,13 @@ public class AdminUserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> getUser(@PathVariable UUID id, @RequestBody UserRequest request) {
+    public ResponseEntity<AdminUserResponse> getUser(@PathVariable UUID id, @RequestBody AdminUserRequest request) {
         if (request == null)
             ErrorCode.INVALID_REQUEST.throwException();
-        UserEntity entity = userControllerConverter.fromRequestToEntity(request);
+        UserEntity entity = userControllerConverter.fromAdminRequestToEntity(request);
 
-        UserEntity userEntity = userService.updateUser(id, entity);
-        UserResponse response = userControllerConverter.fromEntityToResponse(userEntity);
+        UserEntity userEntity = userService.updateUserAsAdmin(id, entity);
+        AdminUserResponse response = userControllerConverter.fromEntityToAdminResponse(userEntity);
         return ResponseEntity.ok(response);
     }
 

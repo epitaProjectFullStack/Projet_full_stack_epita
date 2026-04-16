@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import fr.epita.backend.controller.api.request.AdminUserRequest;
 import fr.epita.backend.controller.api.request.UserRequest;
 import fr.epita.backend.controller.api.response.AdminResponses.UserResponses.AdminUserResponse;
 import fr.epita.backend.controller.api.response.AdminResponses.UserResponses.AdminUsersResponse;
@@ -62,6 +63,16 @@ public class UserControllerConverter {
         entity.setLogin(request.getLogin());
         entity.setPassword(request.getPassword());
         entity.setMail(request.getMail());
+        return entity;
+    }
+
+    public UserEntity fromAdminRequestToEntity(AdminUserRequest request) {
+        UserEntity entity = new UserEntity();
+        entity.setLogin(request.getLogin());
+        entity.setPassword(request.getPassword());
+        entity.setMail(request.getMail());
+        entity.setRole(request.getRole());
+        entity.setBanned(request.isBanned());
         return entity;
     }
 }

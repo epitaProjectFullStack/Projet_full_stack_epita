@@ -5,6 +5,7 @@ import fr.epita.backend.data.model.UserModel;
 import fr.epita.backend.data.repository.UserRepository;
 import fr.epita.backend.domain.entity.UserEntity;
 import fr.epita.backend.domain.service.UserService;
+import fr.epita.backend.utils.Role;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -80,7 +81,29 @@ class UserServiceTest {
         service.createUser(entity);
 
         verify(passwordEncoder).encode("pwd");
+        assertThat(entity.getRole()).isEqualTo(Role.USER);
         assertThat(model.getPassword()).isEqualTo("hashed-pwd");
+        verify(userRepository).save(model);
+    }
+
+    @Test
+    void createUserAsAdmin_should_create_user_with_explicit_role() {
+        UserEntity entity = new UserEntity();
+        entity.setLogin("alice");
+        entity.setMail("alice@mail.com");
+        entity.setPassword("pwd");
+        entity.setRole(Role.MODERATOR);
+
+        UserModel model = new UserModel();
+
+        when(converter.fromEntityToModel(entity)).thenReturn(model);
+        when(userRepository.findByLogin("alice")).thenReturn(Optional.empty());
+        when(userRepository.findByMail("alice@mail.com")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("pwd")).thenReturn("hashed-pwd");
+        when(converter.fromModelToEntity(model)).thenReturn(new UserEntity());
+
+        service.createUserAsAdmin(entity);
+
         verify(userRepository).save(model);
     }
 
@@ -159,9 +182,34 @@ class UserServiceTest {
 
         service.updateUser(id, entity);
 
-        verify(converter).transfertDataFromEntityToModel(model, entity);
         verify(passwordEncoder).encode("pwd");
+        assertThat(model.getLogin()).isEqualTo("new");
+        assertThat(model.getMail()).isEqualTo("mail");
         assertThat(model.getPassword()).isEqualTo("hashed-pwd");
+        verify(userRepository).save(model);
+    }
+
+    @Test
+    void updateUserAsAdmin_should_update_role_and_banned() {
+        UUID id = UUID.randomUUID();
+
+        UserEntity entity = new UserEntity();
+        entity.setLogin("new");
+        entity.setMail("mail");
+        entity.setRole(Role.ADMINISTRATOR);
+        entity.setBanned(true);
+
+        UserModel model = new UserModel();
+        model.setPassword("old-hash");
+
+        when(userRepository.findById(id)).thenReturn(Optional.of(model));
+        when(converter.fromModelToEntity(model)).thenReturn(new UserEntity());
+
+        service.updateUserAsAdmin(id, entity);
+
+        assertThat(model.getRole()).isEqualTo(Role.ADMINISTRATOR);
+        assertThat(model.isBanned()).isTrue();
+        assertThat(model.getPassword()).isEqualTo("old-hash");
         verify(userRepository).save(model);
     }
 

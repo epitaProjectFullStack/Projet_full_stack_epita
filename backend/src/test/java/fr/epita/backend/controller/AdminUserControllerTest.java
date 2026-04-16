@@ -2,11 +2,13 @@ package fr.epita.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.epita.backend.data.repository.UserRepository;
-import fr.epita.backend.controller.api.request.UserRequest;
+import fr.epita.backend.controller.api.request.AdminUserRequest;
 import fr.epita.backend.controller.rest.AdminUserController;
 import fr.epita.backend.converter.ControllerConverter.UserControllerConverter;
 import fr.epita.backend.domain.entity.UserEntity;
 import fr.epita.backend.domain.service.UserService;
+import fr.epita.backend.controller.api.response.AdminResponses.UserResponses.AdminUserResponse;
+import fr.epita.backend.utils.Role;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,14 +57,15 @@ class AdminUserControllerTest {
 
         UserEntity entity = new UserEntity();
 
-        when(converter.fromRequestToEntity(any())).thenReturn(entity);
-        when(userService.createUser(any())).thenReturn(entity);
-        when(converter.fromEntityToResponse(any())).thenReturn(null);
+        when(converter.fromAdminRequestToEntity(any())).thenReturn(entity);
+        when(userService.createUserAsAdmin(any())).thenReturn(entity);
+        when(converter.fromEntityToAdminResponse(any())).thenReturn(new AdminUserResponse());
 
-        UserRequest request = new UserRequest();
+        AdminUserRequest request = new AdminUserRequest();
         request.setLogin("admin");
         request.setPassword("pwd");
         request.setMail("admin@mail.com");
+        request.setRole(Role.ADMINISTRATOR);
 
         // HOW:
         // On envoie une requête POST valide simulée
@@ -148,14 +151,15 @@ class AdminUserControllerTest {
 
         UUID id = UUID.randomUUID();
 
-        when(converter.fromRequestToEntity(any())).thenReturn(new UserEntity());
-        when(userService.updateUser(eq(id), any())).thenReturn(new UserEntity());
-        when(converter.fromEntityToResponse(any())).thenReturn(null);
+        when(converter.fromAdminRequestToEntity(any())).thenReturn(new UserEntity());
+        when(userService.updateUserAsAdmin(eq(id), any())).thenReturn(new UserEntity());
+        when(converter.fromEntityToAdminResponse(any())).thenReturn(new AdminUserResponse());
 
-        UserRequest request = new UserRequest();
+        AdminUserRequest request = new AdminUserRequest();
         request.setLogin("updated");
         request.setPassword("pwd");
         request.setMail("updated@mail.com");
+        request.setRole(Role.MODERATOR);
 
         // HOW:
         // PUT avec données valides
