@@ -1,10 +1,10 @@
 import {HttpClient} from '@angular/common/http';
 import {inject, Injectable, signal} from '@angular/core';
-import {Observable, shareReplay} from 'rxjs';
+import {shareReplay} from 'rxjs';
 
 import {environment} from '../../environments/environment';
+import {AdminUser} from '../interface/admin-user';
 import {Game} from '../interface/game';
-import { AdminUser } from '../interface/admin-user';
 
 
 @Injectable({
@@ -22,15 +22,16 @@ export class BackendService {
 
   checkAdmin() {
     this.http.get<{list: AdminUser[]}>(this.backendUrl + 'admin/user')
-      .subscribe({
-        next: (response) => {
-          this.adminUsersList.set(response.list);
-        }
-      });
+        .subscribe({
+          next: (response) => {
+            this.adminUsersList.set(response.list);
+          }
+        });
   }
 
   getAdminUsers() {
-    const request = this.http.get<{list: any[]}>(this.backendUrl + 'admin/user');
+    const request =
+        this.http.get<{list: any[]}>(this.backendUrl + 'admin/user');
 
     request.subscribe({
       next: response => {
@@ -44,9 +45,7 @@ export class BackendService {
 
     request.subscribe({
       next: () => {
-        this.gamesList.set(
-          this.gamesList().filter(g => g.uuid !== id)
-        );
+        this.gamesList.set(this.gamesList().filter(g => g.uuid !== id));
       }
     });
   }
@@ -57,8 +56,7 @@ export class BackendService {
     request.subscribe({
       next: () => {
         this.adminUsersList.set(
-          this.adminUsersList().filter((u: AdminUser) => u.id !== id)
-        );
+            this.adminUsersList().filter((u: AdminUser) => u.id !== id));
       }
     });
   }
@@ -76,15 +74,15 @@ export class BackendService {
   }
 
   getAllGames() {
-    if (this.gamesList().length === 0) {
-      const request = this.http.get<{list: Game[]}>(this.backendUrl + 'games');
-      request.subscribe({
-        next: response => {
-          console.log(response.list);
-          this.gamesList.set(response.list);
-        }
-      });
-    }
+    return this.http.get<{list: Game[]}>(this.backendUrl + 'games');
+  }
+
+  getReviewerGames() {
+    return this.http.get<{list: Game[]}>(this.backendUrl + 'games/review');
+  }
+
+  getAdminGames() {
+    return this.http.get<{list: Game[]}>(this.backendUrl + 'games/all');
   }
 
   postRegister(login: string, password: string, email: string) {

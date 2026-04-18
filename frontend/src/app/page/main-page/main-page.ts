@@ -2,8 +2,8 @@ import {Component, inject, OnInit, signal} from '@angular/core';
 
 import {FilterBar} from '../../components/filter-bar/filter-bar';
 import {GameCard} from '../../components/game-card/game-card';
+import {Game} from '../../interface/game';
 import {BackendService} from '../../services/backend-service';
-import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-main-page',
@@ -14,18 +14,11 @@ import { WebSocketService } from '../../services/websocket.service';
 export class MainPage implements OnInit {
   protected backendApi = inject(BackendService);
   protected currentFilter = signal<string>('');
-  private ws = inject(WebSocketService);
+  protected games = signal<Game[]>([]);
 
   ngOnInit(): void {
-    this.backendApi.getAllGames();
-
-    this.ws.connect((event) => {
-      console.log('EVENT RECU', event);
-
-      // refresh liste
-      this.backendApi.gamesList.set([]);
-      this.backendApi.getAllGames();
-    });
+    this.backendApi.getAllGames().subscribe(
+        response => {this.games.set(response.list)})
   }
 
   protected onFilterChange(filter: string) {
