@@ -2,10 +2,10 @@ package fr.epita.backend.domain.service;
 
 import fr.epita.backend.data.model.UserModel;
 import fr.epita.backend.data.repository.UserRepository;
+import fr.epita.backend.domain.entity.AuthTokens;
 import fr.epita.backend.domain.entity.UserEntity;
 import fr.epita.backend.utils.ErrorCode;
 import fr.epita.backend.utils.Role;
-import fr.epita.backend.converter.DataConverter.UserDataConverter;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,21 +14,24 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final UserDataConverter userDataConverter;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final RefreshTokenService refreshTokenService;
     private final UserService userService;
 
-    public AuthService(UserRepository userRepository, UserDataConverter userDataConverter,
-            PasswordEncoder passwordEncoder, TokenService tokenService, UserService userService) {
+    public AuthService(UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            TokenService tokenService,
+            RefreshTokenService refreshTokenService,
+            UserService userService) {
         this.userRepository = userRepository;
-        this.userDataConverter = userDataConverter;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.refreshTokenService = refreshTokenService;
         this.userService = userService;
     }
 
-    public UserEntity auth(String login, String password) {
+    public AuthTokens auth(String login, String password) {
         if (login == null || login.isEmpty() || password == null || password.isEmpty())
             ErrorCode.INVALID_REQUEST.throwException();
 
@@ -41,10 +44,35 @@ public class AuthService {
         if (!passwordEncoder.matches(password, userModel.getPassword()))
             ErrorCode.BAD_CREDENTIAL.throwException();
 
-        String token = tokenService.generateToken();
-        userModel.setToken(token);
-        userRepository.save(userModel);
-        return userDataConverter.fromModelToEntity(userModel);
+        return new AuthTokens(
+                tokenService.generateToken(userModel),
+                refreshTokenService.createRefreshToken(userModel));
+    }
+
+    public AuthTokens refresh(String rawRefreshToken) {
+        if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
+            ErrorCode.INVALID_REQUEST.throwException();
+        }
+
+        UserModel userModel = refreshTokenService.validateRefreshToken(rawRefreshToken);
+
+        if (userModel.isBanned()) {
+            ErrorCode.BANNED_USER.throwException();
+        }
+
+        refreshTokenService.revokeRefreshToken(rawRefreshToken);
+
+        return new AuthTokens(
+                tokenService.generateToken(userModel),
+                refreshTokenService.createRefreshToken(userModel));
+    }
+
+    public void logout(String rawRefreshToken) {
+        if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
+            ErrorCode.INVALID_REQUEST.throwException();
+        }
+
+        refreshTokenService.revokeRefreshToken(rawRefreshToken);
     }
 
     public UserEntity register(UserEntity entity) {

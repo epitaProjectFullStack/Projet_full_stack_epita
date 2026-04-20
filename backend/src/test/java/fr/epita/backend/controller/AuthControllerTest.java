@@ -2,11 +2,11 @@ package fr.epita.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.epita.backend.data.repository.UserRepository;
+import fr.epita.backend.domain.entity.AuthTokens;
 import fr.epita.backend.controller.rest.AuthController;
-import fr.epita.backend.converter.ControllerConverter.AuthControllerConverter;
 import fr.epita.backend.converter.ControllerConverter.UserControllerConverter;
-import fr.epita.backend.domain.entity.UserEntity;
 import fr.epita.backend.domain.service.AuthService;
+import fr.epita.backend.domain.service.TokenService;
 import fr.epita.backend.utils.ErrorCode;
 
 import org.junit.jupiter.api.Test;
@@ -17,9 +17,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
@@ -38,13 +38,13 @@ class AuthControllerTest {
     private AuthService authService;
 
     @MockBean
-    private AuthControllerConverter authConverter;
-
-    @MockBean
     private UserControllerConverter userControllerConverter;
 
     @MockBean
     private UserRepository userRepository;
+
+    @MockBean
+    private TokenService tokenService;
 
     @Test
     void auth_should_return_200() throws Exception {
@@ -58,10 +58,7 @@ class AuthControllerTest {
         // Cas nominal → login/password corrects
 
         when(authService.auth("admin", "admin"))
-                .thenReturn(new UserEntity());
-
-        when(authConverter.FromEntityToAuthResponse(any()))
-                .thenReturn(null);
+                .thenReturn(new AuthTokens("jwt-access-token", "jwt-refresh-token"));
 
         String json = """
         {
@@ -72,13 +69,15 @@ class AuthControllerTest {
 
         // HOW:
         // - Envoi d’un POST avec JSON valide
-        // - Le service mock retourne un utilisateur
+        // - Le service mock retourne un JWT
         // - Le controller renvoie 200 OK
 
         mockMvc.perform(post("/api/auth")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("jwt-access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("jwt-refresh-token"));
     }
 
     @Test
@@ -196,5 +195,57 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void refresh_should_return_200() throws Exception {
+        when(authService.refresh("refresh-token"))
+                .thenReturn(new AuthTokens("new-access-token", "new-refresh-token"));
+
+        String json = """
+        {
+          "refreshToken": "refresh-token"
+        }
+        """;
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("new-access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("new-refresh-token"));
+    }
+
+    @Test
+    void refresh_should_return_401_if_refresh_token_invalid() throws Exception {
+        when(authService.refresh("refresh-token"))
+                .thenThrow(ErrorCode.INVALID_REFRESH_TOKEN.toException());
+
+        String json = """
+        {
+          "refreshToken": "refresh-token"
+        }
+        """;
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void logout_should_return_204() throws Exception {
+        String json = """
+        {
+          "refreshToken": "refresh-token"
+        }
+        """;
+
+        mockMvc.perform(post("/api/auth/logout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNoContent());
+
+        verify(authService).logout("refresh-token");
     }
 }

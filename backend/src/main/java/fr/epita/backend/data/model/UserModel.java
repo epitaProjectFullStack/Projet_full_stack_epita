@@ -34,9 +34,6 @@ public class UserModel {
     @Column(name = "role", nullable = false)
     private Role role;
 
-    @Column(name = "token", nullable = true)
-    private String token;
-
     @Column(name = "banned", nullable = false)
     private boolean banned;// A modifier en Objet comportant plus de détails Date du Ban / Raison du Ban /
                            // Durée du Ban

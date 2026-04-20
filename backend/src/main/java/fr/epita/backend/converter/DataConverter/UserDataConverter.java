@@ -15,7 +15,6 @@ public class UserDataConverter {
         entity.setPassword(model.getPassword());
         entity.setMail(model.getMail());
         entity.setRole(model.getRole());
-        entity.setToken(model.getToken());
         entity.setBanned(model.isBanned());
         return entity;
     }
@@ -27,7 +26,6 @@ public class UserDataConverter {
         model.setPassword(entity.getPassword());
         model.setMail(entity.getMail());
         model.setRole(entity.getRole());
-        model.setToken(entity.getToken());
         model.setBanned(entity.isBanned());
         return model;
     }
@@ -37,7 +35,6 @@ public class UserDataConverter {
         model.setPassword(entity.getPassword());
         model.setMail(entity.getMail());
         model.setRole(entity.getRole());
-        model.setToken(entity.getToken());
         model.setBanned(entity.isBanned());
     }
 
