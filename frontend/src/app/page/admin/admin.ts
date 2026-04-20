@@ -1,8 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { BackendService } from '../../services/backend-service';
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
+import {CommonModule} from '@angular/common';
+import {Component, inject, OnInit, signal} from '@angular/core';
+import {ButtonModule} from 'primeng/button';
+import {TableModule} from 'primeng/table';
+
+import {AdminUser} from '../../interface/admin-user';
+import {Game} from '../../interface/game';
+import {BackendService} from '../../services/backend-service';
 
 @Component({
   selector: 'app-admin',
@@ -11,22 +14,28 @@ import { ButtonModule } from 'primeng/button';
   templateUrl: './admin.html'
 })
 export class Admin implements OnInit {
-
   private backend = inject(BackendService);
 
-  articles = this.backend.gamesList;
-  users = this.backend.adminUsersList;
+  articles = signal<Game[]>([]);
+  users = signal<AdminUser[]>([]);
 
   ngOnInit() {
-    this.backend.getAllGames();
-    this.backend.getAdminUsers();
+    this.backend.getAllGames().subscribe(result => {
+      this.articles.set(result.list);
+    });
+
+    this.backend.getAdminUsers().subscribe(result => {
+      this.users.set(result.list);
+    });
   }
 
   deleteArticle(id: any) {
-    this.backend.deleteGame(id);
+    this.backend.deleteGame(id).subscribe(() => {
+      this.articles.set(this.articles().filter(game => game.uuid !== id));
+    });
   }
 
   banUser(id: any) {
-    this.backend.deleteUser(id);
+    this.backend.deleteUser(id).subscribe(() => this.ngOnInit());
   }
 }

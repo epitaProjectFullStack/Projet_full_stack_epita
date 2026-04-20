@@ -1,8 +1,8 @@
 import {Role} from '../enum/role';
 
 export interface User {
+  id: string;
   login: string;
-  main: string;
+  mail: string;
   role: Role;
-  banned: boolean;
 }
