@@ -31,7 +31,6 @@ public class UserControllerConverter {
         response.setPassword(entity.getPassword());
         response.setMail(entity.getMail());
         response.setRole(entity.getRole());
-        response.setToken(entity.getToken());
         response.setBanned(entity.isBanned());
         return response;
     }

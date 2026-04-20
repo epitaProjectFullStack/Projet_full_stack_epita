@@ -14,6 +14,5 @@ public class UserEntity {
     private String password;
     private String mail;
     private Role role;
-    private String token;
     private boolean banned;
 }

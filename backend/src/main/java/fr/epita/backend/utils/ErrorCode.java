@@ -9,6 +9,9 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public enum ErrorCode {
     BAD_CREDENTIAL(HttpStatus.UNAUTHORIZED, "Bad credentials"),
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Token expired"),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "Invalid refresh token"),
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh token expired"),
     LOGIN_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "Login already exist"),
     MAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "Mail already exist"),
     USER_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "Mail or Login already exist"),

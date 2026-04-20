@@ -12,6 +12,5 @@ public class AdminUserResponse {
     private String password;
     private String mail;
     private Role role;
-    private String token;
     private boolean banned;
 }
