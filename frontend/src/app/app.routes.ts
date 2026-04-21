@@ -2,6 +2,7 @@ import {Routes} from '@angular/router';
 
 import {Role} from './enum/role';
 import {Admin} from './page/admin/admin';
+import {ArticleEdit} from './page/article-edit/article-edit';
 import {ArticleNew} from './page/article-new/article-new';
 import {ArticleReview} from './page/article-review/article-review';
 import {ArticleShow} from './page/article-show/article-show';
@@ -45,5 +46,6 @@ export const routesDict = [
 export const routes: Routes = [
   {path: 'article/:id', component: ArticleShow},
   {path: 'article/review/:id', component: ArticleReview},
+  {path: 'article/edit/:id', component: ArticleEdit},
   ...routesDict.map((elem) => elem.route)
 ];

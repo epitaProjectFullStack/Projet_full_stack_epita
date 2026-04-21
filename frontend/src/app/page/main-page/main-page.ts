@@ -1,4 +1,5 @@
 import {Component, inject, OnInit, signal} from '@angular/core';
+import {Router} from '@angular/router';
 
 import {FilterBar} from '../../components/filter-bar/filter-bar';
 import {GameCard} from '../../components/game-card/game-card';
@@ -13,6 +14,8 @@ import {BackendService} from '../../services/backend-service';
 })
 export class MainPage implements OnInit {
   protected backendApi = inject(BackendService);
+  protected router = inject(Router);
+
   protected currentFilter = signal<string>('');
   protected games = signal<Game[]>([]);
 

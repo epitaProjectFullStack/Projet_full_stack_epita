@@ -1,4 +1,4 @@
-import {Component, OnDestroy} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Editor, NgxEditorComponent, NgxEditorMenuComponent, Toolbar} from 'ngx-editor';
 
@@ -8,7 +8,9 @@ import {Editor, NgxEditorComponent, NgxEditorMenuComponent, Toolbar} from 'ngx-e
   templateUrl: './article-editor.html',
   styleUrl: './article-editor.css',
 })
-export class ArticleEditor implements OnDestroy {
+export class ArticleEditor implements OnInit, OnDestroy {
+  @Input() defaultHtml?: string;
+
   html = '';
   editor: Editor = new Editor();
 
@@ -25,6 +27,10 @@ export class ArticleEditor implements OnDestroy {
     ['superscript', 'subscript'],
     ['undo', 'redo'],
   ];
+
+  ngOnInit(): void {
+    this.editor.commands.insertHTML(this.defaultHtml ?? '').exec();
+  }
 
   ngOnDestroy(): void {
     this.editor.destroy();

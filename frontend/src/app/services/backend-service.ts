@@ -2,8 +2,10 @@ import {HttpClient} from '@angular/common/http';
 import {inject, Injectable, signal} from '@angular/core';
 import {jwtDecode} from 'jwt-decode'
 import {of, shareReplay} from 'rxjs';
+import {UUIDTypes} from 'uuid';
 
 import {environment} from '../../environments/environment';
+import {GameStatus} from '../enum/game-status';
 import {Role, stringToRole} from '../enum/role';
 import {AdminUser} from '../interface/admin-user';
 import {Game} from '../interface/game';
@@ -34,11 +36,13 @@ export class BackendService {
       accessToken: tokens.accessToken,
       payload: {
         sub: payload['sub'],
+        login: payload['login'],
         role: stringToRole(payload['role']),
       },
-      expAccessToken: new Date(payload['exp'] * 1000),
+      expAccessToken: payload['exp'] * 1000,
       refreshToken: tokens.refreshToken,
     });
+    console.log(this.token());
   }
 
   private resetGameCache(gameId?: string) {
@@ -154,12 +158,11 @@ export class BackendService {
 
   removeTokens() {
     if (this.token() !== null) {
+      const refreshToken = this.token()?.refreshToken;
+      this.token.set(null);
       this.createPost<void>(
-              this.backendUrl + 'auth/logout',
-              {refreshToken: this.token()!!.refreshToken})
-          .subscribe(() => {
-            this.token.set(null);
-          })
+              this.backendUrl + 'auth/logout', {refreshToken: refreshToken})
+          .subscribe(() => {})
     }
   }
 
@@ -191,6 +194,39 @@ export class BackendService {
                        })
                        .pipe(shareReplay(1));
     replay.subscribe(() => this.resetGameCache());
+
+    return replay;
+  }
+
+  changeGameStatus(gameId: UUIDTypes, newStatut: GameStatus) {
+    const replay = this.http
+                       .patch<void>(
+                           this.backendUrl + 'games/' + gameId + '/status',
+                           JSON.stringify({status: newStatut}),
+                           {headers: {'content-type': 'application/json'}})
+                       .pipe(shareReplay(1));
+
+    replay.subscribe(() => {this.resetGameCache(gameId.toString())});
+
+    return replay;
+  }
+
+  editGame(
+      gameId: UUIDTypes, subjectGameName: string, articleName: string,
+      articleContent: string) {
+    const replay =
+        this.http
+            .put(
+                this.backendUrl + 'games/' + gameId.toString(), JSON.stringify({
+                  authorId: this.token()?.payload.sub,
+                  subjectGameName: subjectGameName,
+                  articleName: articleName,
+                  articleContent: articleContent
+                }),
+                {headers: {'content-type': 'application/json'}})
+            .pipe(shareReplay(1));
+
+    replay.subscribe(() => this.resetGameCache(gameId.toString()));
 
     return replay;
   }

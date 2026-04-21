@@ -5,13 +5,14 @@ import {Observable, of} from 'rxjs';
 import {Game} from '../../interface/game';
 import {BackendService} from '../../services/backend-service';
 
-import {ArticleShow} from './article-show';
+import {ArticleEdit} from './article-edit';
 
+describe('ArticleEdit', () => {
+  let component: ArticleEdit;
+  let fixture: ComponentFixture<ArticleEdit>;
 
-
-describe('ArticleShow', () => {
   class BackendServiceStub {
-    getAllGames(): Observable<{list: Game[]}>{return of({
+    getReviewerGames(): Observable<{list: Game[]}>{return of({
       list: [{
         uuid: '0000-0000-0000-0000',
         authorLogin: 'oui',
@@ -26,13 +27,10 @@ describe('ArticleShow', () => {
     }
   }
 
-  let component: ArticleShow;
-  let fixture: ComponentFixture<ArticleShow>;
-
   beforeEach(async () => {
     await TestBed
         .configureTestingModule({
-          imports: [ArticleShow],
+          imports: [ArticleEdit],
           providers: [
             provideRouter([]),
             {provide: BackendService, useClass: BackendServiceStub}
@@ -40,7 +38,7 @@ describe('ArticleShow', () => {
         })
         .compileComponents();
 
-    fixture = TestBed.createComponent(ArticleShow);
+    fixture = TestBed.createComponent(ArticleEdit);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

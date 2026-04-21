@@ -8,7 +8,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = backendService.getToken();
 
   if (token !== null) {
-    if (token.expAccessToken.getUTCSeconds() < Date.now()) {
+    if (token.expAccessToken < Date.now()) {
       // Invalid access but valid refresh token.
       backendService.doRefresh().subscribe(
           () => {return next(req.clone({
@@ -16,8 +16,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           }))});
     } else {
       // Valid access token.
-      const cloned =
-          req.clone({setHeaders: {Authorization: token.accessToken}});
+      const cloned = req.clone(
+          {setHeaders: {Authorization: `Bearer ${token.accessToken}`}});
       return next(cloned);
     }
   }

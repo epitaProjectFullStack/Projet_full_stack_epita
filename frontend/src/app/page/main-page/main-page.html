@@ -4,7 +4,7 @@
     @for (game of games(); track game.uuid) {
         @if (game.articleName.includes(this.currentFilter()) || game.subjectGameName.includes(this.currentFilter())) {
             <li class="list-group-item" style="margin: 10px;">
-                <app-game-card [game]="game"/>
+                <app-game-card [game]="game" [actionName]="'See More'" [action]="() => this.router.navigate(['article', game.uuid])"/>
             </li>
         }
     }

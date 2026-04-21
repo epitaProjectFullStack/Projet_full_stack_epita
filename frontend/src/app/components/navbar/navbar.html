@@ -14,7 +14,7 @@
 
                     @if (this.backend.getToken() !== null) {
                       <li class="nav-item">
-                        <a class="nav-link" (click)="this.backend.removeTokens()">
+                        <a class="nav-link" (click)="this.onLogout()">
                           Logout
                         </a>
                       </li>

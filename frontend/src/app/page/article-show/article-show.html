@@ -2,4 +2,11 @@
     <div>Loading...</div>
 } @else {
     <app-article [game]="game()!!" />
+
+    @if (madeByUser) {
+        <div class="floating-center">
+            <button (click)="onModifyClick()" class="btn btn-primary">Modify</button>
+            <button (click)="onDeleteClick()" class="btn btn-danger">Remove</button>
+        </div>
+    }
 }

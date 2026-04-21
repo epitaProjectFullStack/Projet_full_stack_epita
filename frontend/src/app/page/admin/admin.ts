@@ -20,7 +20,7 @@ export class Admin implements OnInit {
   users = signal<AdminUser[]>([]);
 
   ngOnInit() {
-    this.backend.getAllGames().subscribe(result => {
+    this.backend.getAdminGames().subscribe(result => {
       this.articles.set(result.list);
     });
 
@@ -31,7 +31,7 @@ export class Admin implements OnInit {
 
   deleteArticle(id: any) {
     this.backend.deleteGame(id).subscribe(() => {
-      this.articles.set(this.articles().filter(game => game.uuid !== id));
+      this.articles.update(old => old.filter(game => game.uuid !== id));
     });
   }
 

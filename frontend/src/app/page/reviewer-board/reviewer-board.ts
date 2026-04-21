@@ -14,14 +14,15 @@ import {BackendService} from '../../services/backend-service';
 })
 export class ReviewerBoard implements OnInit {
   backendService = inject(BackendService);
-  games = signal<Game[]>([]);
-
   private router = inject(Router);
+
+  games = signal<Game[]>([]);
 
   ngOnInit(): void{this.backendService.getReviewerGames().subscribe(
       reponse => {this.games.set(reponse.list)})}
 
   onReviewClick(id: UUIDTypes) {
-    this.router.navigate(['/article/review', id]);
+    console.log(`Review click for id ${id}`);
+    this.router.navigate(['article', 'review', id]).then(b => console.log(b));
   }
 }
