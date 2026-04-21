@@ -1,41 +1,78 @@
-# Projet_full_stack_epita
+# Projet Full Stack EPITA
 
-## POUR TESTER LE BUILD AVANT DE POUSSER
-- ./mvnw clean verify
-- npm run coverage
+Application full stack composée de:
+- un backend Spring Boot 3 / Java 21
+- un frontend Angular
+- PostgreSQL pour la persistance
+- Kafka pour la diffusion d'événements
+- WebSocket pour certaines mises à jour temps réel
 
-## BUILD FRONTEND (AVANT PUSH)
-- npm run build
+## Vue d'ensemble
 
-## visualiser l'api grace a swagger
+Le projet expose une API REST documentée via Swagger/OpenAPI et une interface web Angular.
+La sécurité repose sur:
+- un `accessToken` JWT pour les routes protégées
+- un `refreshToken` stocké côté backend, hashé en base et rotatif
 
-- http://localhost/swagger-ui/index.html
-- http://localhost/v3/api-docs
+Les rôles métier actuellement gérés sont:
+- `USER`
+- `MODERATOR`
+- `ADMINISTRATOR`
 
-## projet configurer avec java 21
-- sudo apt install openjdk-21-jdk
-- sudo update-alternatives --config java
+Les statuts métier des jeux/articles sont:
+- `OK`
+- `TO_REVIEW`
+- `DISCARD`
 
-## mettre a jour les deps
+## Documentation
 
-- mvn clean test
-- mvn clean install
+- [Documentation d'exploitation](./docs/exploitation.md)
+- [Documentation utilisateur](./docs/utilisateur.md)
+- [Documentation développeur](./docs/developpeur.md)
 
-## RESTART PROPRE DOCKER
-- docker-compose down -v
-- docker-compose up --build
-=> backend → 80
-=> ng serve --configuration production
+## Accès utiles
 
-## RESTART LOCAL
-- mvn spring-boot:run
-- npm start
-=> backend → 8080
-=> frontend → 4200
+- Swagger UI: [http://localhost/swagger-ui/index.html](http://localhost/swagger-ui/index.html)
+- OpenAPI JSON: [http://localhost/v3/api-docs](http://localhost/v3/api-docs)
+- Frontend en Docker: [http://localhost](http://localhost)
+- Frontend en local Angular: [http://localhost:4200](http://localhost:4200)
+- Backend local hors Docker: [http://localhost:8080](http://localhost:8080)
+- Kafka UI: [http://localhost:8080/ui/clusters/local](http://localhost:8080/ui/clusters/local)
 
-## KAFKA UI
-- http://localhost:8080/ui/clusters/local
+## Commandes rapides
 
-## COMMANDE dans le  CMD POUR VOIR LE POURCENTAGE DE TEST avec jacoco
+### Backend
 
-- xdg-open target/site/jacoco/index.html
+```bash
+cd backend
+./mvnw clean verify
+./mvnw test
+./mvnw spring-boot:run
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm ci
+npm run build
+npm run build:prod
+npm run coverage
+npm start
+```
+
+### Docker Compose
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+## CI/CD
+
+Le projet contient actuellement trois workflows GitHub Actions:
+- [Java CI avec Maven](./.github/workflows/maven.yml)
+- [Angular CI](./.github/workflows/angular.yml)
+- [Release CI](./.github/workflows/release.yml)
+
+Le détail du comportement attendu et des limites actuelles est décrit dans la [documentation développeur](./docs/developpeur.md).
