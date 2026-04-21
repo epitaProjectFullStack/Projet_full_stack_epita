@@ -76,3 +76,8 @@ Le projet contient actuellement trois workflows GitHub Actions:
 - [Release CI](./.github/workflows/release.yml)
 
 Le détail du comportement attendu et des limites actuelles est décrit dans la [documentation développeur](./docs/developpeur.md).
+
+## POURCENTAGE DE TESTS BACKEND REALISER
+- cd backend
+- xdg-open target/site/jacoco/index.html
+(chemin d'acces = backend/target/site/jacoco/index.html)
