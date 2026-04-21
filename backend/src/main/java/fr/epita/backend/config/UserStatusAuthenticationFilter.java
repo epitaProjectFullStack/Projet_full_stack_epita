@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,15 +45,15 @@ public class UserStatusAuthenticationFilter extends OncePerRequestFilter {
             userId = UUID.fromString(jwtAuthentication.getToken().getSubject());
         } catch (IllegalArgumentException e) {
             SecurityContextHolder.clearContext();
-            throw ErrorCode.BAD_CREDENTIAL.toException();
+            throw new BadCredentialsException(ErrorCode.BAD_CREDENTIAL.getMessage(), e);
         }
 
         UserModel userModel = userRepository.findById(userId)
-                .orElseThrow(ErrorCode.BAD_CREDENTIAL::toException);
+                .orElseThrow(() -> new BadCredentialsException(ErrorCode.BAD_CREDENTIAL.getMessage()));
 
         if (userModel.isBanned()) {
             SecurityContextHolder.clearContext();
-            throw ErrorCode.BANNED_USER.toException();
+            throw new AccessDeniedException(ErrorCode.BANNED_USER.getMessage());
         }
 
         UsernamePasswordAuthenticationToken authentication =

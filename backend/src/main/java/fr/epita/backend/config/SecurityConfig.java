@@ -30,9 +30,16 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
   private final UserStatusAuthenticationFilter userStatusAuthenticationFilter;
+  private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
+  private final ApiAccessDeniedHandler apiAccessDeniedHandler;
 
-  public SecurityConfig(UserStatusAuthenticationFilter userStatusAuthenticationFilter) {
+  public SecurityConfig(
+      UserStatusAuthenticationFilter userStatusAuthenticationFilter,
+      ApiAuthenticationEntryPoint apiAuthenticationEntryPoint,
+      ApiAccessDeniedHandler apiAccessDeniedHandler) {
     this.userStatusAuthenticationFilter = userStatusAuthenticationFilter;
+    this.apiAuthenticationEntryPoint = apiAuthenticationEntryPoint;
+    this.apiAccessDeniedHandler = apiAccessDeniedHandler;
   }
 
   @Bean
@@ -58,6 +65,9 @@ public class SecurityConfig {
                 .hasRole("ADMINISTRATOR")
                 .anyRequest()
                 .authenticated())
+        .exceptionHandling(exception -> exception
+            .authenticationEntryPoint(apiAuthenticationEntryPoint)
+            .accessDeniedHandler(apiAccessDeniedHandler))
         .oauth2ResourceServer(oauth2 -> oauth2
             .jwt(jwt -> jwt.jwtAuthenticationConverter(buildJwtAuthenticationConverter())))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
