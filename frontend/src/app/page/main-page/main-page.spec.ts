@@ -13,7 +13,7 @@ describe('MainPage', () => {
   let fixture: ComponentFixture<MainPage>;
 
   class BackendServiceStub {
-    getAllGames(): Observable<{list: Game[]}> {
+    getAdminGames(): Observable<{list: Game[]}> {
       return of({
         list: [{
           uuid: '0000-0000-0000-0000',
@@ -24,11 +24,15 @@ describe('MainPage', () => {
         }]
       })
     }
+    getAllGames(): Observable<{list: Game[]}> {
+      return this.getAdminGames();
+    }
   }
 
   class WebSocketServiceStub {
-    connect() {
-      // do nothing
+    connect(callback: (event: any) => void) {
+      // simulate event si besoin
+      // callback({ eventType: 'GAME_CREATED' });
     }
   }
   beforeEach(async () => {
