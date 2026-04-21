@@ -31,6 +31,10 @@ public class KafkaConsumerService {
     // WHY: journalisation
     LOGGER.info("EVENT RECEIVED: {}", message);
 
+    // Envoie ce message à TOUS les clients WebSocket abonnés au topic "games"
+    // Le broker est configuré avec un prefix "/topic" dans WebSocketConfig,
+    // donc on doit envoyer vers "/topic/games" pour que les clients qui
+    // se sont abonnés à "/topic/games" reçoivent l'événement.
     messagingTemplate.convertAndSend("/topic/games", message);
   }
 }

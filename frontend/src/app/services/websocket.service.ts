@@ -1,31 +1,52 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
+import * as Stomp from '@stomp/stompjs';
+import {environment} from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService {
+  private stompClient: any = null;
 
   connect(callback: (event: any) => void) {
-    if (typeof window === 'undefined') return; // Not in a browser environment
+    console.log('🚀 connect() called');
+
+    if (this.stompClient && this.stompClient.active) return;
 
     const baseUrl = environment.apiUrl.replace('/api/', '');
-    const wsUrl = baseUrl.replace('http://', 'ws://').replace('https://', 'wss://') + 'ws';
 
-    const socket = new WebSocket(wsUrl);
+const wsUrl = baseUrl.replace('http', 'ws') + '/ws';
 
-    socket.onopen = () => {
-      console.log('WebSocket connected');
+    const client = new Stomp.Client({
+      brokerURL: 'ws://localhost/ws',
+      reconnectDelay: 5000,
+      debug: (str: string) => console.log('[STOMP]', str),
+    });
+
+    client.onConnect = () => {
+      console.log('✅ STOMP CONNECTED');
+
+      client.subscribe('/topic/games', (message: any) => {
+        console.log('📩 RAW:', message.body);
+
+        try {
+          const data = JSON.parse(message.body);
+          console.log('📦 PARSED:', data);
+          callback(data);
+        } catch (e) {
+          console.error('❌ parse error', e);
+        }
+      });
     };
 
-    socket.onmessage = (event) => {
-      callback(JSON.parse(event.data));
+    client.onStompError = (frame: any) => {
+      console.error('❌ STOMP ERROR', frame);
     };
 
-    socket.onerror = (err) => {
-      console.error('WebSocket error', err);
-    };
+    client.activate();
+    this.stompClient = client;
+  }
 
-    socket.onclose = () => {
-      console.log('WebSocket closed');
-    };
+  disconnect() {
+    this.stompClient?.deactivate();
+    this.stompClient = null;
   }
 }

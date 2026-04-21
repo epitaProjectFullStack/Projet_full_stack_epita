@@ -36,6 +36,7 @@ public class KafkaProducerService {
    */
   public void sendGameCreated(UUID gameId) {
     GameEventMessage kafkamessage = new GameEventMessage(GameEvent.GAME_CREATED, gameId, Instant.now());
+     System.out.println("SENDING TO KAFKA: " + kafkamessage);
     kafkaTemplate.send(KafkaTopics.GAME_EVENTS, kafkamessage);
   }
 

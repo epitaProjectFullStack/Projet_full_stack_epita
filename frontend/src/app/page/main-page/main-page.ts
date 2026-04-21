@@ -17,7 +17,7 @@ export class MainPage implements OnInit {
   protected games = signal<Game[]>([]);
 
   ngOnInit(): void {
-    this.backendApi.getAllGames().subscribe(
+    this.backendApi.getAdminGames().subscribe(
         response => {this.games.set(response.list)})
   }
 

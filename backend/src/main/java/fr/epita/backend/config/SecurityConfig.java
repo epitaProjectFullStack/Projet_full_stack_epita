@@ -4,6 +4,9 @@ import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.crypto.SecretKey;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +27,10 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableMethodSecurity
@@ -32,6 +39,9 @@ public class SecurityConfig {
   private final UserStatusAuthenticationFilter userStatusAuthenticationFilter;
   private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
   private final ApiAccessDeniedHandler apiAccessDeniedHandler;
+
+  @Value("${app.cors.allowed-origins}")
+  private List<String> allowedOrigins;
 
   public SecurityConfig(
       UserStatusAuthenticationFilter userStatusAuthenticationFilter,
@@ -42,16 +52,26 @@ public class SecurityConfig {
     this.apiAccessDeniedHandler = apiAccessDeniedHandler;
   }
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http)
-      throws Exception {
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
     http.csrf(csrf -> csrf.disable())
+        .cors(cors -> cors.configurationSource(request -> {
+            var config = new CorsConfiguration();
+            config.setAllowedOrigins(allowedOrigins);
+            config.setAllowedMethods(List.of("*"));
+            config.setAllowedHeaders(List.of("*"));
+            config.setAllowCredentials(true);
+            return config;
+        }))
         .authorizeHttpRequests(
-            auth -> auth.requestMatchers(HttpMethod.GET, "/api/games/review")
+            auth -> auth
+                // WEBSOCKET DOIT PASSER
+                .requestMatchers("/ws/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/games/review")
                 .hasAnyRole("MODERATOR", "ADMINISTRATOR")
                 .requestMatchers(HttpMethod.GET, "/api/games/all")
-                .hasRole("ADMINISTRATOR")
+                .permitAll()
                 .requestMatchers(HttpMethod.PATCH, "/api/games/*/status")
                 .hasAnyRole("MODERATOR", "ADMINISTRATOR")
                 .requestMatchers("/api/games/**", "/api/auth/**",
@@ -72,10 +92,9 @@ public class SecurityConfig {
             .jwt(jwt -> jwt.jwtAuthenticationConverter(buildJwtAuthenticationConverter())))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .addFilterAfter(userStatusAuthenticationFilter, BearerTokenAuthenticationFilter.class);
-
+  
     return http.build();
-  }
-
+}
   @Bean
   public JwtDecoder jwtDecoder(@Value("${security.jwt.secret}") String secret) {
     SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
@@ -106,4 +125,5 @@ public class SecurityConfig {
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
+  
 }
