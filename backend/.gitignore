@@ -34,3 +34,6 @@ build/
 
 ### Volume docker ###
 db-data
+
+### env file ###
+.env

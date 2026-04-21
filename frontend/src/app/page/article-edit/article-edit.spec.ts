@@ -12,7 +12,7 @@ describe('ArticleEdit', () => {
   let fixture: ComponentFixture<ArticleEdit>;
 
   class BackendServiceStub {
-    getReviewerGames(): Observable<{list: Game[]}>{return of({
+    getAllGames(): Observable<{list: Game[]}>{return of({
       list: [{
         uuid: '0000-0000-0000-0000',
         authorLogin: 'oui',

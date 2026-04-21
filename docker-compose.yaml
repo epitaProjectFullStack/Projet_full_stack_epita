@@ -13,10 +13,6 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9093
-      - ADMIN_LOGIN=${ADMIN_LOGIN}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ADMIN_MAIL=${ADMIN_MAIL}
-      - JWT_SECRET=${JWT_SECRET}
     build: .
     ports:
       - "80:8080"
