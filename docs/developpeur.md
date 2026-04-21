@@ -39,6 +39,15 @@ Ce n'est pas une architecture hexagonale stricte:
 - les services métier dépendent encore des repositories Spring Data
 - les modèles JPA sont encore proches de la logique applicative
 
+Patterns réellement utilisés:
+- architecture en couches Spring Boot classique
+- DTO `request/response` côté contrôleurs REST
+- converters dédiés entre controller, domain et data
+- services applicatifs qui centralisent les règles métier
+- repositories Spring Data JPA pour l'accès persistant
+- configuration par composants Spring (`@Configuration`, `@Bean`, `CommandLineRunner`)
+- sécurité Spring Security avec JWT Resource Server plus filtre hybride métier
+
 ## Sécurité
 
 ### Authentification
@@ -59,6 +68,18 @@ Principaux fichiers:
 - validation JWT portée par Spring Security Resource Server
 - rechargement du user en base après authentification JWT
 - effet immédiat du bannissement et du changement de rôle
+
+### Séquence JWT / refresh token
+
+1. `POST /api/auth`
+2. `AuthService` valide le login et le mot de passe
+3. `TokenService` génère un `accessToken` JWT
+4. `RefreshTokenService` génère un `refreshToken`, stocke son hash en base et renvoie le token brut
+5. le client appelle les routes protégées avec `Authorization: Bearer <accessToken>`
+6. Spring Security valide le JWT, puis `UserStatusAuthenticationFilter` recharge l'utilisateur courant
+7. si l'`accessToken` expire, le client appelle `POST /api/auth/refresh` avec le `refreshToken`
+8. `RefreshTokenService` valide puis révoque l'ancien refresh token et en émet un nouveau
+9. `POST /api/auth/logout` révoque le refresh token courant
 
 ### Bootstrap admin
 
@@ -89,12 +110,21 @@ Variables utilisées:
 
 ### Kafka
 
+Rôle dans le produit:
+- diffuser des événements backend de manière asynchrone
+- découpler la production d'événements métier de leur consommation
+- préparer l'intégration avec d'autres composants ou traitements différés
+
 Fichiers principaux:
 - [`KafkaConfig.java`](../backend/src/main/java/fr/epita/backend/config/KafkaConfig.java)
 - [`KafkaProducerService.java`](../backend/src/main/java/fr/epita/backend/domain/service/KafkaProducerService.java)
 - [`KafkaConsumerService.java`](../backend/src/main/java/fr/epita/backend/domain/service/KafkaConsumerService.java)
 
 ### WebSocket
+
+Rôle dans le produit:
+- pousser des mises à jour temps réel vers le frontend
+- éviter un polling HTTP permanent pour certains écrans réactifs
 
 Fichiers principaux:
 - [`WebSocketConfig.java`](../backend/src/main/java/fr/epita/backend/config/WebSocketConfig.java)
@@ -183,7 +213,7 @@ Fait actuellement:
 - architecture hexagonale non stricte
 - pas de tests e2e backend+frontend
 - pas d'analyse statique industrialisée dans la CI
-- secrets encore partiellement définis dans les properties
+- externalisation des secrets encore incomplète selon les environnements
 
 ## Ajouter une feature
 

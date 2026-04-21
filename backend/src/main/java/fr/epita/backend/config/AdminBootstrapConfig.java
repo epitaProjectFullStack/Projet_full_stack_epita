@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @Configuration
 public class AdminBootstrapConfig {
@@ -15,11 +16,18 @@ public class AdminBootstrapConfig {
     @Bean
     public CommandLineRunner adminBootstrapRunner(
             UserRepository userRepository,
+            JdbcTemplate jdbcTemplate,
             PasswordEncoder passwordEncoder,
             @Value("${app.bootstrap.admin.login}") String adminLogin,
             @Value("${app.bootstrap.admin.password}") String adminPassword,
             @Value("${app.bootstrap.admin.mail}") String adminMail) {
         return args -> {
+            // Compatibility migration after removing the persisted GUEST role.
+            jdbcTemplate.update(
+                    "UPDATE users SET role = ? WHERE role = ?",
+                    Role.USER.name(),
+                    "GUEST");
+
             UserModel existingAdmin = userRepository.findByLogin(adminLogin).orElse(null);
 
             if (existingAdmin != null) {

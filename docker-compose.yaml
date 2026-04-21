@@ -16,6 +16,7 @@ services:
       - ADMIN_LOGIN=${ADMIN_LOGIN}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - ADMIN_MAIL=${ADMIN_MAIL}
+      - JWT_SECRET=${JWT_SECRET}
     build: .
     ports:
       - "80:8080"
