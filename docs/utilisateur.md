@@ -27,6 +27,11 @@ Routes backend utiles:
 - `POST /api/auth`
 - `GET /api/games`
 
+Ne peut pas:
+- accéder aux routes protégées `/api/user/**`
+- accéder aux contenus en revue `/api/games/review`
+- accéder à l'administration `/api/admin/**`
+
 ## Utilisateur authentifié
 
 Fonctionnalités principales:
@@ -49,6 +54,11 @@ Routes backend utiles:
 - `POST /api/auth/refresh`
 - `POST /api/auth/logout`
 
+Ne peut pas:
+- accéder à `/api/admin/**`
+- voir tous les contenus via `GET /api/games/all`
+- modérer les contenus via `PATCH /api/games/{id}/status`
+
 ## Modérateur
 
 Fonctionnalités principales:
@@ -67,6 +77,10 @@ Statuts manipulés:
 - `TO_REVIEW`
 - `OK`
 - `DISCARD`
+
+Ne peut pas:
+- gérer les utilisateurs via `/api/admin/**`
+- lister tous les contenus via `GET /api/games/all`
 
 ## Administrateur
 
@@ -87,6 +101,18 @@ Routes backend utiles:
 - `PUT /api/admin/user/{id}`
 - `DELETE /api/admin/user/{id}`
 - `GET /api/games/all`
+
+Ne peut pas:
+- utiliser un refresh token comme bearer token
+
+## Tableau synthétique des permissions
+
+| Profil | Pages principales | Actions autorisées | Endpoints majeurs |
+| --- | --- | --- | --- |
+| Non authentifié | `/`, `/signin`, `/register` | consulter les contenus validés, s'inscrire, se connecter | `POST /api/auth/register`, `POST /api/auth`, `GET /api/games` |
+| `USER` | `/new`, `/article/:id` | gérer ses contenus, accéder à ses routes protégées, rafraîchir sa session | `GET /api/user/**`, `POST/PUT /api/games`, `POST /api/auth/refresh` |
+| `MODERATOR` | `/reviewer`, `/article/review/:id` | consulter les contenus à revoir, valider/rejeter | `GET /api/games/review`, `PATCH /api/games/{id}/status` |
+| `ADMINISTRATOR` | `/admin` | gérer les utilisateurs, voir tous les contenus | `GET/POST/PUT/DELETE /api/admin/user`, `GET /api/games/all` |
 
 ## Authentification
 
