@@ -54,12 +54,6 @@ jobs:
         working-directory: ./backend
         run: mvn clean verify
 
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-report
-          path: backend/target/site/jacoco/
-
   sonar:
     name: Sonar Analysis
     runs-on: ubuntu-latest
@@ -67,6 +61,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # récupérer coverage frontend
       - name: Download frontend coverage
@@ -74,12 +70,6 @@ jobs:
         with:
           name: frontend_coverage_report
           path: frontend/coverage/frontend
-
-      - name: Download backend coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: jacoco-report
-          path: backend/target/site/jacoco
           
       # setup java
       - name: Set up JDK 21
@@ -93,6 +83,10 @@ jobs:
         working-directory: ./backend
         run: mvn clean verify
 
+      - name: Copy dependencies
+        working-directory: ./backend
+        run: mvn dependency:copy-dependencies -DoutputDirectory=target/dependency
+
       # sonar
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
@@ -100,8 +94,11 @@ jobs:
           args: >
             -Dsonar.projectKey=epitaProjectFullStack_Projet_full_stack_epita
             -Dsonar.organization=epitaprojectfullstack
+            -Dsonar.sources=backend/src/main/java
+            -Dsonar.tests=backend/src/test/java
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/frontend/lcov.info
             -Dsonar.coverage.jacoco.xmlReportPaths=backend/target/site/jacoco/jacoco.xml
             -Dsonar.java.binaries=backend/target/classes
+            -Dsonar.java.libraries=backend/target/dependency/*.jar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
