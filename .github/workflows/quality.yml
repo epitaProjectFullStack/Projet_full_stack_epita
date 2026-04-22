@@ -59,3 +59,22 @@ jobs:
         with:
           name: jacoco-report
           path: backend/target/site/jacoco/
+
+  sonar:
+    name: Sonar Analysis
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          args: >
+            -Dsonar.projectKey=epitaProjectFullStack_Projet_full_stack_epita
+            -Dsonar.organization=epitaprojectfullstack
+            -Dsonar.javascript.lcov.reportPaths=frontend/coverage/frontend/lcov.info
+            -Dsonar.coverage.jacoco.xmlReportPaths=backend/target/site/jacoco/jacoco.xml
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
