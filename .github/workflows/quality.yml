@@ -68,6 +68,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # récupérer coverage frontend
+      - name: Download frontend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend_coverage_report
+          path: frontend/coverage/frontend
+
+      # setup java
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # recompile backend
+      - name: Build backend
+        working-directory: ./backend
+        run: mvn clean verify
+
+      # sonar
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
@@ -76,5 +96,6 @@ jobs:
             -Dsonar.organization=epitaprojectfullstack
             -Dsonar.javascript.lcov.reportPaths=frontend/coverage/frontend/lcov.info
             -Dsonar.coverage.jacoco.xmlReportPaths=backend/target/site/jacoco/jacoco.xml
+            -Dsonar.java.binaries=backend/target/classes
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
