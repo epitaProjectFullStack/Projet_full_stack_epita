@@ -1,7 +1,9 @@
 import {Component, inject, signal} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
+import {UUIDTypes} from 'uuid';
 
 import {Article} from '../../components/article/article';
+import {GameStatus} from '../../enum/game-status';
 import {Game} from '../../interface/game';
 import {BackendService} from '../../services/backend-service';
 
@@ -16,17 +18,29 @@ export class ArticleReview {
 
   private activatedRoute = inject(ActivatedRoute);
   private backendService = inject(BackendService);
+  private router = inject(Router);
 
   constructor() {
     this.activatedRoute.params.subscribe((params) => {
-      const id = params['id'];
+      const id: string = params['id'];
       this.backendService.getReviewerGames().subscribe(response => {
         this.game.set(response.list.find(game => game.uuid === id));
       })
     })
   }
 
-  onApprove() {}
+  onApprove() {
+    if (this.game()) {
+      this.backendService.changeGameStatus(this.game()!.uuid, GameStatus.OK)
+          .subscribe(() => {this.router.navigate(['reviewer'])});
+    }
+  }
 
-  onRefuse() {}
+  onRefuse() {
+    if (this.game()) {
+      this.backendService
+          .changeGameStatus(this.game()!.uuid, GameStatus.DISCARD)
+          .subscribe(() => {this.router.navigate(['reviewer'])});
+    }
+  }
 }

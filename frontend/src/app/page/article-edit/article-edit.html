@@ -1,0 +1,10 @@
+@if (game() === undefined) {
+    <div>Loading...</div>
+} @else {
+    <app-article-editor [defaultHtml]="game()!.articleContent"/>
+
+    <div class="floating-center">
+        <button (click)="this.onValidate()" class="btn btn-primary">Validate</button>
+    </div>
+}
+

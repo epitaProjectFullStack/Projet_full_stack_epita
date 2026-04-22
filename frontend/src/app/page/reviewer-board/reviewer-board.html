@@ -1,6 +1,10 @@
-@for (game of games(); track $index) {
-    <div class="container-fluid">
-        <app-game-card [game]="game"/>
-        <button class="btn btn-primary">Start Review</button>
-    </div>
+@if (games().length > 0) {
+    @for (game of games(); track $index) {
+        <div class="container-fluid">
+            <app-game-card [game]="game" [actionName]="'Start Review'" [action]="() => this.onReviewClick(game.uuid)"/>
+        </div>
+    }
+} @else {
+    <h3>Nothin to review.</h3>
 }
+

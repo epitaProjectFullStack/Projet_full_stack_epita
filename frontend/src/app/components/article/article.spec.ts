@@ -1,5 +1,7 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 
+import {GameStatus} from '../../enum/game-status';
+
 import {Article} from './article';
 
 describe('Article', () => {
@@ -17,7 +19,8 @@ describe('Article', () => {
       authorLogin: 'oui',
       subjectGameName: 'LoL',
       articleName: 'Magic',
-      articleContent: 'Magic is magic!'
+      articleContent: 'Magic is magic!',
+      status: GameStatus.OK
     };
     fixture.detectChanges();
     await fixture.whenStable();

@@ -1,6 +1,8 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {provideRouter} from '@angular/router';
 
+import {GameStatus} from '../../enum/game-status';
+
 import {GameCard} from './game-card';
 
 describe('GameCard', () => {
@@ -20,7 +22,8 @@ describe('GameCard', () => {
       authorLogin: 'oui',
       subjectGameName: 'LoL',
       articleName: 'Magic',
-      articleContent: 'Magic is magic!'
+      articleContent: 'Magic is magic!',
+      status: GameStatus.OK
     };
     fixture.detectChanges();
     await fixture.whenStable();

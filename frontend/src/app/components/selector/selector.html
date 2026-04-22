@@ -1,0 +1,6 @@
+<select [(ngModel)]="selectedValue" class="form-select">
+    @for (option of options; track $index) {
+        <option [ngValue]="option">{{option}}</option>
+    }
+</select>
+<button class="btn btn-primary" (click)="confirm.emit(this.selectedValue)">Confirm</button>

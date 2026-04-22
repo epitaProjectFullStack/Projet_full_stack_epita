@@ -1,7 +1,16 @@
-.floating-center {
+.article-title {
     position: sticky;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    text-align: center;
     margin-bottom: 1vh;
+}
+
+h1 {
+    font-size: larger;
+    font-weight: 700;
+}
+
+h2 {
+    font-size: medium;
+    font-weight: 500;
 }

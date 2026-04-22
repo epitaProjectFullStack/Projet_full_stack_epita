@@ -4,42 +4,18 @@
   <!-- ARTICLES -->
   <div class="mb-6">
     <h2 class="text-xl font-semibold mb-2">Articles</h2>
-
-    <table class="table-auto w-full border">
-      <tr>
-        <th>Nom</th>
-        <th>Action</th>
-      </tr>
-
-      <tr *ngFor="let article of articles()">
-        <td>{{ article.subjectGameName }}</td>
-        <td>
-         <button (click)="deleteArticle(article.uuid)">
-            Delete
-          </button>
-        </td>
-      </tr>
-    </table>
+    <app-article-table [articles]="this.articles()" (delete)="deleteArticle($event)" />
   </div>
 
   <!-- USERS -->
   <div>
     <h2 class="text-xl font-semibold mb-2">Users</h2>
-
-    <table class="table-auto w-full border">
-      <tr>
-        <th>Login</th>
-        <th>Role</th>
-        <th>Action</th>
-      </tr>
-
-      <tr *ngFor="let user of users()">
-        <td>{{ user.login }}</td>
-        <td>{{ user.role }}</td>
-        <td>
-          <button (click)="banUser(user.id)">Ban</button>
-        </td>
-      </tr>
-    </table>
+    <app-admin-user-table 
+      [users]="this.users()" 
+      (banUser)="banUser($event)" 
+      (unbanUser)="unbanUser($event)" 
+      (changeUserRole)="changeUserRole($event.user, $event.role)" 
+    />
+    
   </div>
 </div>

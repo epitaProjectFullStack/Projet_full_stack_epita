@@ -1,2 +1,6 @@
-<div class="floating-center w-100">{{game.articleName}}</div>
-{{game.articleContent}}
+<div class="container-fluid">
+    <h1 class="article-title w-100">{{game.articleName}}</h1>
+    <h2 class="article-title w-100">{{game.subjectGameName}}</h2>
+</div>
+
+<article [innerHTML]="game.articleContent | safeHtml"></article>

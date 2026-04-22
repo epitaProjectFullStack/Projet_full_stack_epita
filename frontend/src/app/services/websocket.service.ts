@@ -1,52 +1,52 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import * as Stomp from '@stomp/stompjs';
+
 import {environment} from '../../environments/environment';
+import {KafkaEvent} from '../interface/kafka-event';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({providedIn: 'root'})
 export class WebSocketService {
-  private stompClient: any = null;
+  private baseUrl = environment.apiUrl.replace('/api/', '');
+  private wsUrl = this.baseUrl.replace('http', 'ws') + '/ws';
+  private stompClient!: any;
 
-  connect(callback: (event: any) => void) {
-    console.log('🚀 connect() called');
+  private listeners: ((event: KafkaEvent) => void)[] = [];
 
-    if (this.stompClient && this.stompClient.active) return;
-
-    const baseUrl = environment.apiUrl.replace('/api/', '');
-
-const wsUrl = baseUrl.replace('http', 'ws') + '/ws';
-
-    const client = new Stomp.Client({
-      brokerURL: 'ws://localhost/ws',
+  constructor() {
+    this.stompClient = new Stomp.Client({
+      brokerURL: this.wsUrl,
       reconnectDelay: 5000,
       debug: (str: string) => console.log('[STOMP]', str),
     });
 
-    client.onConnect = () => {
-      console.log('✅ STOMP CONNECTED');
-
-      client.subscribe('/topic/games', (message: any) => {
-        console.log('📩 RAW:', message.body);
+    this.stompClient.onConnect = () => {
+      console.log('STOMP CONNECTED');
+      this.stompClient.subscribe('/topic/games', (message: any) => {
+        console.log('RAW:', message.body);
 
         try {
-          const data = JSON.parse(message.body);
-          console.log('📦 PARSED:', data);
-          callback(data);
+          const data: KafkaEvent = JSON.parse(message.body);
+          console.log('PARSED:', data);
+
+          this.listeners.forEach(l => l(data));
         } catch (e) {
-          console.error('❌ parse error', e);
+          console.error('parse error', e);
         }
       });
     };
 
-    client.onStompError = (frame: any) => {
-      console.error('❌ STOMP ERROR', frame);
+    this.stompClient.onStompError = (frame: any) => {
+      console.error('STOMP ERROR', frame);
     };
 
-    client.activate();
-    this.stompClient = client;
+    this.stompClient.activate();
   }
 
-  disconnect() {
-    this.stompClient?.deactivate();
-    this.stompClient = null;
+  listen(callback: (event: KafkaEvent) => void) {
+    this.listeners.push(callback);
+  }
+
+  unlisten(callback: (event: KafkaEvent) => void) {
+    this.listeners.filter(l => l !== callback);
   }
 }

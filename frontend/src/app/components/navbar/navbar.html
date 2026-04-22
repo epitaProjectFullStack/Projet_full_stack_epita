@@ -3,16 +3,22 @@
         <a class="navbar-brand d-flex align-items-center" routerLink="/"><span>WikiGames</span></a>
                 <ul class="navbar-nav ms-auto">
                   @for (item of routes; track $index) {
-
-                    @if (item.name !== 'Admin' || backend.isAdmin()) {
-
+                    @if (item.roles!!.includes(this.backend.getRole())) {
                       <li class="nav-item">
                         <a class="nav-link" [routerLink]="item.route.path">
                           {{ item.name }}
                         </a>
                       </li>
+                      } 
                     }
-                  }
+
+                    @if (this.backend.getToken() !== null) {
+                      <li class="nav-item">
+                        <a class="nav-link" (click)="this.onLogout()">
+                          Logout
+                        </a>
+                      </li>
+                    }
                 </ul>
         </div>
 </nav>
