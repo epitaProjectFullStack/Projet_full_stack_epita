@@ -1,10 +1,11 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {Router} from '@angular/router';
 
 import {FilterBar} from '../../components/filter-bar/filter-bar';
 import {GameCard} from '../../components/game-card/game-card';
 import {Game} from '../../interface/game';
 import {BackendService} from '../../services/backend-service';
+import {WebSocketService} from '../../services/websocket.service';
 
 @Component({
   selector: 'app-main-page',
@@ -12,16 +13,28 @@ import {BackendService} from '../../services/backend-service';
   templateUrl: './main-page.html',
   styleUrl: './main-page.css',
 })
-export class MainPage implements OnInit {
+export class MainPage implements OnInit, OnDestroy {
   protected backendApi = inject(BackendService);
   protected router = inject(Router);
+  private ws = inject(WebSocketService);
 
   protected currentFilter = signal<string>('');
   protected games = signal<Game[]>([]);
 
+  private kafkaCallback = () => {
+    this.backendApi.getAllGames().subscribe(
+        response => {this.games.set(response.list)});
+  };
+
   ngOnInit(): void {
-    this.backendApi.getAdminGames().subscribe(
-        response => {this.games.set(response.list)})
+    this.backendApi.getAllGames().subscribe(
+        response => {this.games.set(response.list)});
+
+    this.ws.listen(this.kafkaCallback);
+  }
+
+  ngOnDestroy(): void {
+    this.ws.unlisten(this.kafkaCallback);
   }
 
   protected onFilterChange(filter: string) {

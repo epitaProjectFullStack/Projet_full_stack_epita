@@ -2,6 +2,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {provideRouter} from '@angular/router';
 import {Observable, of} from 'rxjs';
 
+import {GameStatus} from '../../enum/game-status';
 import {Game} from '../../interface/game';
 import {BackendService} from '../../services/backend-service';
 
@@ -16,7 +17,8 @@ describe('ReviewerBoard', () => {
           authorLogin: 'oui',
           subjectGameName: 'LoL',
           articleName: 'Magic',
-          articleContent: 'Magic is magic!'
+          articleContent: 'Magic is magic!',
+          status: GameStatus.OK
         }]
       })
     }

@@ -1,0 +1,19 @@
+<table class="table-auto w-full border table-striped table-bordered">
+      <tr>
+        <th>Nom</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+
+    @for (article of articles; track $index) {
+        <tr>
+            <td>{{ article.subjectGameName }}</td>
+            <td>{{ article.status }}</td>
+            <td>
+                <button (click)="delete.emit(article.uuid)" class="btn btn-danger">
+                    Delete
+                </button>
+            </td>
+        </tr>
+    }
+</table>

@@ -8,8 +8,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const errorService = inject(ErrorHandling)
 
   return next(req).pipe(tap((event) => {
-    console.log(event);
-    if (event.type === HttpEventType.Response && !event.ok) {
+    if ((event.type === HttpEventType.Response ||
+         event.type === HttpEventType.ResponseHeader) &&
+        !event.ok) {
       console.error(`Error on url ${req.url}`);
       console.error(event);
 

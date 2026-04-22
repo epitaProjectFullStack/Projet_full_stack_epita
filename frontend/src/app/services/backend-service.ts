@@ -13,6 +13,7 @@ import {Tokens} from '../interface/tokens';
 
 import {CacheService} from './cache-service';
 import {ErrorHandling} from './error-handling';
+import {WebSocketService} from './websocket.service';
 
 
 @Injectable({
@@ -22,9 +23,16 @@ export class BackendService {
   private http = inject(HttpClient);
   private cache = inject(CacheService);
   private errorMessager = inject(ErrorHandling);
+  private ws = inject(WebSocketService);
 
   private backendUrl = environment.apiUrl;
   private token = signal<Tokens|null>(null);
+
+  constructor() {
+    this.ws.listen((event) => {
+      this.resetGameCache(event.gameId.toString());
+    });
+  }
 
   private setupTokens(tokens: {accessToken: string, refreshToken: string}) {
     console.log(`Setup Token: ${this.token} | ${this.token()}`);
@@ -227,6 +235,25 @@ export class BackendService {
             .pipe(shareReplay(1));
 
     replay.subscribe(() => this.resetGameCache(gameId.toString()));
+
+    return replay;
+  }
+
+  modifyUser(user: AdminUser) {
+    const replay =
+        this.http
+            .put<AdminUser>(
+                this.backendUrl + 'admin/user/' + user.id, JSON.stringify({
+                  login: user.login,
+                  password: '',
+                  mail: user.mail,
+                  role: Role[user.role],
+                  banned: user.banned
+                }),
+                {headers: {'content-type': 'application/json'}})
+            .pipe(shareReplay(1));
+
+    replay.subscribe(() => this.resetUserCache(user.id.toString()));
 
     return replay;
   }

@@ -1,0 +1,25 @@
+<table class="table-auto w-full border table-striped table-bordered">
+      <tr>
+        <th>Login</th>
+        <th>Role</th>
+        <th>Ban</th>
+        <th>Modify Role</th>
+      </tr>
+
+      @for (user of users; track $index) {
+        <tr>
+            <td>{{ user.login }}</td>
+            <td>{{ this.roleToString(user.role) }}</td>
+            <td>
+            @if (user.banned) {
+                <button (click)="unbanUser.emit(user)" class="btn">Ban</button>
+            } @else {
+                <button (click)="banUser.emit(user)" class="btn btn-danger">Ban</button>
+            }
+            </td>
+            <td>
+            <app-selector [options]="['USER', 'MODERATOR', 'ADMINISTRATOR']" (confirm)="this.changeUserRole.emit({user: user, role: $event})"/>
+            </td>
+        </tr>
+      }
+</table>
