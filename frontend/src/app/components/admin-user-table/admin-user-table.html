@@ -12,7 +12,7 @@
             <td>{{ this.roleToString(user.role) }}</td>
             <td>
             @if (user.banned) {
-                <button (click)="unbanUser.emit(user)" class="btn">Ban</button>
+                <button (click)="unbanUser.emit(user)" class="btn btn-danger">UnBan</button>
             } @else {
                 <button (click)="banUser.emit(user)" class="btn btn-danger">Ban</button>
             }

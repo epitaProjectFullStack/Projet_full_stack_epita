@@ -18,7 +18,23 @@ export class AdminUserTable {
   @Output()
   changeUserRole = new EventEmitter<{user: AdminUser, role: string}>();
 
-  protected roleToString(role: Role) {
-    return Role[role];
+  protected roleToString(role: Role|string) {
+    if (typeof role === 'string') {
+      return role;
+    }
+
+    switch (role) {
+      case Role.USER:
+        return 'USER';
+
+      case Role.ADMINISTRATOR:
+        return 'ADMINISTRATOR';
+
+      case Role.MODERATOR:
+        return 'MODERATOR';
+
+      default:
+        return 'UNKNOWN';
+    }
   }
 }
