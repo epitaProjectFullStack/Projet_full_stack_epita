@@ -2,7 +2,7 @@
     <h5 class="card-header">{{this.game.articleName}}</h5>
     <div class="card-body">
         <h5 class="card-title">{{this.game.subjectGameName}}</h5>
-        <p class="card-text">{{splitContent}}</p>
+        <p class="card-text">{{splitContent.length <= 100 ? splitContent : (splitContent.slice(0, 100) + '...')}}</p>
         <button (click)="this.onActionClick()" class="btn btn-primary">{{this.actionName}}</button>
         <footer class="blockquote-footer">By {{game.authorLogin}}</footer>
     </div>
